@@ -85,7 +85,7 @@
 >
 > faster-whisper
 > 
-> ffmpeg関係は動画圧縮しなければ不要
+> ffmpeg関係は動画圧縮しなければ不要  
 > ffmpeg-python  
 > future  
 > pydub  
