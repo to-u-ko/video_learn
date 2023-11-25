@@ -301,7 +301,13 @@ docker compose stop
 - CPUしか使えない環境で文字起こしをすると、PCスペック不足・dockerのリソース不足（主にメモリ不足）の場合、文字起こしのfaster-whisperが落ちます。（メモリ８GB以上を推奨）
 
 
+<p align="right">(<a href="#top">トップへ</a>)</p>
+
+<br>
+
+## その他
+※コードのcomp は、ffmpegで動画圧縮をしようとした跡です。
+　不要なコードがいくつか含まれているため、今後の整理が必要です。
 
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
-
