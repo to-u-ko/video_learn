@@ -235,7 +235,7 @@ docker compose up
 
 ### 動作確認
 
-http://127.0.0.1 か、http://localhostにアクセスできるか確認
+http://127.0.0.1 か、http://localhost にアクセスできるか確認
 アクセスできたら成功
 
 ### コンテナの停止
