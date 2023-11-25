@@ -190,7 +190,7 @@
 
 OPENAI_API_KEY = "sk-v9XXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
-1. chapter/src/project/settings_local.py ファイルに以下の例のようにDjangoのシークレットキー、S3へのアクセスキー・バケット名、メール通知用のアプリパスワード等を記載
+2. chapter/src/project/settings_local.py ファイルに以下の例のようにDjangoのシークレットキー、S3へのアクセスキー・バケット名、メール通知用のアプリパスワード等を記載
 
 > SECRET_KEY = 'django-insecure-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 
@@ -206,7 +206,7 @@ OPENAI_API_KEY = "sk-v9XXXXXXXXXXXXXXXXXXXXXXXXXXX"
 >EMAIL_USE_SSL = False
 >DEFAULT_FROM_EMAIL = 'XXXXXXXXXX@gmail.com'
 
-1. GPUを使用するのであれば、docker-compose.ymlファイルのdjangoコンテナと以下のコメントアウトを外す(cpuを使用するのであればそのまま)
+3. GPUを使用するのであれば、docker-compose.ymlファイルのdjangoコンテナと以下のコメントアウトを外す(cpuを使用するのであればそのまま)
 
 services:  
   django:
@@ -227,9 +227,11 @@ services:
     #         - capabilities: [gpu]
 
 
-1. 以上を修正後、以下のコマンドで環境を構築
+4. 以上を修正後、以下のコマンドで環境を構築
 
 docker compose up
+
+<br><br>
 
 ### 動作確認
 
