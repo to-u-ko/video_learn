@@ -1,0 +1,19 @@
+Django<4
+uwsgi
+mysqlclient == 2.1.0
+
+faster-whisper
+ffmpeg-python
+future
+pydub
+pyee
+typing_extensions
+langchain
+openai == 0.28.1
+
+celery
+django-celery-results
+django-redis
+
+boto3
+django-storages

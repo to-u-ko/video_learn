@@ -1,0 +1,9 @@
+mysql/*
+__pycache__/
+static/*
+openai_api.env
+src/storage/videos/*.mp4
+src/storage/comp_videos/*.mp4
+src/storage/transcriptions/*.txt
+src/project/settings_local.py
+nohup.out

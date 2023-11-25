@@ -1,0 +1,37 @@
+<!-- CSS読み込み -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'style.css' %}" />
+
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- title -->
+    <title>{% block title %} {% endblock title %}</title>
+    {% block meta %} {% endblock meta %}
+  </head>
+  <body>
+    <!-- header -->
+    <header>
+      {% block header %} {% endblock header %}
+      <ul class="navbar">
+        <li>
+          <a href="{% url 'logout'%}">ログアウト</a>
+        </li>
+        <li>
+          <a href="{% url 'upload'%}">動画アップロード</a>
+        </li>
+        <li>
+          <a href="{% url 'main'%}">チャプター一覧</a>
+        </li>
+        <li>
+          <a href="{% url 'user'%}">アカウント管理</a>
+        </li>
+      </ul>
+    </header>
+
+    <!-- main -->
+    <main>{% block main %} {% endblock main %}</main>
+  </body>
+</html>

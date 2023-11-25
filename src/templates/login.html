@@ -1,0 +1,36 @@
+<!-- ベース読み込み -->
+{% extends 'base-top.html' %} {% load static %}
+
+<head>
+  <!-- title挿入 -->
+  {% block title %}ログイン{% endblock title %}
+</head>
+
+<body>
+  <!-- header挿入 -->
+  {% block header %} {% endblock header%}
+
+  <!-- main挿入 -->
+  {% block main %}
+  <div class="main-container">
+    <h1>チャプたん</h1>
+    <form action="{% url 'login' %}" name="form1" method="post">
+      {% csrf_token %}
+      <!-- form挿入 -->
+      {{ form.as_p }}
+      <p><input type="hidden" name="next" value="{{next}}" /></p>
+      <div class="login-button">
+        <a href="javascript:form1.submit()" class="circleButton">ログイン</a>
+        <img
+          class="chara_icon"
+          src="{% static 'chara_icon.png' %}"
+          alt="character-icon"
+          oncontextmenu="return false;"
+        />
+      </div>
+    </form>
+
+    <p><a href="/admin" class="admin">管理者用ページ</a></p>
+  </div>
+  {% endblock %}
+</body>

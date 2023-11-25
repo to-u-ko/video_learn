@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+<head>
+  {% block title %}編集ページ{% endblock %}
+</head>
+
+<body>
+  {% block header %}
+  <style>
+    main {
+      grid-row: 2 / 3;
+      grid-column: 2 / 5;
+      padding: 50px;
+    }
+
+    .video-and-chapters-container {
+      display: grid;
+      grid-template-columns: 1fr 2fr 2fr 1fr;
+    }
+
+    .video-wrapper {
+      grid-column: 2 / 3;
+    }
+
+    .chapters-wrapper {
+      grid-column: 3 / 4;
+      padding-left: 70px;
+    }
+
+    .chapter-text {
+      overflow: auto;
+      width: 100%;
+      height:250px;
+    }
+
+    .form-wrapper {
+      width: 50%;
+      margin-top: 20px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #id_chapter_data {
+      resize: none;
+      width: 100%;
+    }
+  </style>
+  {% endblock header%} {% block main %} {% if chapter.video_file_path != null %}
+  <div class="video-and-chapters-container">
+    <div class="video-wrapper">
+      <video
+        controls
+        preload="auto"
+        playsinline
+        src="{{ chapter.video_file_path }}"
+        style="width: 100%; height: auto"
+        id="videoPlayer"
+      ></video>
+    </div>
+
+    <div class="chapters-wrapper">
+      <h3>タイトル：{{ chapter.video_title }}</h3>
+      <div class="chapter-text">
+        {% for line in chapter_lines %}
+          <p><a href="#" class="chapter-link">{{ line }}</a></p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // チャプターリンクにイベントリスナーを設定
+        var chapterLinks = document.querySelectorAll(".chapter-link");
+        chapterLinks.forEach(function (link) {
+          link.addEventListener("click", function (event) {
+            event.preventDefault();
+            var timeString = this.textContent.match(/\[(\d{2}:\d{2}:\d{2})\]/)[1];
+            jumpTo(timeString);
+          });
+        });
+      });
+
+      function jumpTo(timeString) {
+        var video = document.getElementById("videoPlayer");
+        var parts = timeString.split(":");
+        var hours = parseInt(parts[0]);
+        var minutes = parseInt(parts[1]);
+        var seconds = parseInt(parts[2]);
+
+        // 総秒数を計算
+        var totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+        // 動画を指定された時間にジャンプ
+        video.currentTime = totalSeconds;
+        video.play();
+      }
+    </script>
+  </div>
+  {% endif %}
+  <div class="form-wrapper">
+    <form method="POST">
+      {% csrf_token %} {% for field in form %}
+      <div class="fieldWrapper">
+        {{ field.errors }} {{ field.label_tag }} {{ field }}
+      </div>
+
+      {% endfor %}
+
+      <button type="submit" class="ui button">保存</button>
+
+      <p><strong>作成日時:</strong> {{ chapter.created_at }}</p>
+      <p><strong>更新日時:</strong> {{ chapter.updated_at }}</p>
+      <p><strong>作成者:</strong> {{ chapter.user.username }}</p>
+    </form>
+    {% if transcription_url != "文字起こし未完了" %}
+      <div style="text-align:right;">
+        <a href="{{ transcription_url }}">文字起こしテキストをダウンロード</a></div>
+      </div>
+    {% endif %}
+  {% endblock %}
+</body>

@@ -1,0 +1,78 @@
+<!-- ベース読み込み -->
+{% extends 'base.html' %} {% load static %}
+
+<head>
+  <!-- title挿入 -->
+  {% block title %}チャプター一覧{% endblock title %} {% block meta %}
+  <meta http-equiv="refresh" content="60; URL=" />
+  {% endblock meta %}
+</head>
+
+<body>
+  <!-- header挿入 -->
+  {% block header %}
+  <style>
+    main {
+      grid-row: 2 / 3;
+      grid-column: 2 / 5;
+      padding: 50px;
+    }
+    .thsize {
+      font-size: 80%;
+    }
+  </style>
+  {% endblock header %}
+
+  <!-- main挿入 -->
+  {% block main %}
+  <div class="main-container">
+    <h2>チャプター一覧</h2>
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="キーワードで検索"
+      style="width: 50%"
+    />
+    <table id="Table" border="1" width="75%" bgcolor="white">
+      <tr height="50">
+        <th width="60%">タイトル</th>
+        <th width="20%" class="thsize">更新日時</th>
+        <th width="20%" class="thsize">ステータス</th>
+      </tr>
+      {% for item in chapter_list %}
+      <tr height="40">
+        <td><a href="{% url 'edit' item.id %}">{{ item.video_title }}</a></td>
+        <td align="center" class="thsize">{{ item.updated_at }}</td>
+        <td align="center" class="thsize">{{ item.status }}</td>
+      </tr>
+      {% empty %}
+      <tr height="40">
+        <td>まだチャプターがありません</td>
+        <td></td>
+        <td></td>
+        {% endfor %}
+      </tr>
+    </table>
+  </div>
+
+  <script>
+    document
+      .getElementById("searchInput")
+      .addEventListener("keyup", function () {
+        let searchValue = this.value.toLowerCase();
+        let tableRows = document
+          .getElementById("Table")
+          .getElementsByTagName("tr");
+
+        for (let i = 1; i < tableRows.length; i++) {
+          let rowText = tableRows[i].textContent.toLowerCase();
+          if (rowText.indexOf(searchValue) > -1) {
+            tableRows[i].style.display = "";
+          } else {
+            tableRows[i].style.display = "none";
+          }
+        }
+      });
+  </script>
+  {% endblock main %}
+</body>
