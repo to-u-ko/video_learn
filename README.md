@@ -79,27 +79,27 @@
 | nvidia/cuda           | 11.7.1-cudnn8-runtime-ubuntu20.04     |
 
 その他、requirements.txtの内容
-> Django<4
-> uwsgi
+> Django<4  
+> uwsgi  
 > mysqlclient == 2.1.0
 >
 > faster-whisper
 > 
 > ffmpeg関係は動画圧縮しなければ不要
 > ffmpeg-python  
-> future
-> pydub
-> pyee
+> future  
+> pydub  
+> pyee  
 > typing_extensions
 > 
-> langchain
+> langchain  
 > openai == 0.28.1
 >
-> celery
-> django-celery-results
+> celery  
+> django-celery-results  
 > django-redis
 >
-> boto3
+> boto3  
 > django-storages
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
@@ -108,7 +108,8 @@
 ## ディレクトリ構成
 
 <!-- Treeコマンドを使ってディレクトリ構成を記載 -->
-
+<pre>
+.
 `-- chapter
     |-- Docker
     |   |-- Django
@@ -175,6 +176,7 @@
             |-- signup.html
             |-- upload.html
             `-- user.html
+</pre>
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
 
