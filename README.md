@@ -288,7 +288,6 @@ docker compose stop
 ### djangoコンテナ又はceleryコンテナが立ちあがらない原因
 - settings_local.pyの環境設定が不十分
 <br>
-<br>
 
   
 
