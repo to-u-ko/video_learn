@@ -298,7 +298,7 @@ docker compose stop
 - chatGPTのAPI利用上限に達した。
 - chatGPTの3.5-turboのAPIで、gpt4を使おうとした。（chapter_app/create_chapter.py修正ミス）
 - CPUしか使えないのに、GPU処理を使うよう設定した。（yml修正ミス）
-- CPUしか使えない環境で文字起こしをすると、PCスペック不足・dockerのリソース不足（主にメモリ不足）の場合、文字起こしのfaster-whisperが落ちます。（メモリ８GB以上を推奨）
+- CPUしか使えない環境で文字起こしをすると、PCスペック不足・dockerのリソース不足（主にメモリ不足）の場合、文字起こしのfaster-whisperが落ちます。（メモリ16GB以上を推奨）
 
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
