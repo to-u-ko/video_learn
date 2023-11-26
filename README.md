@@ -190,7 +190,7 @@
 
 OPENAI_API_KEY = "sk-v9XXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
-2. chapter/src/project/settings_local.py ファイルに以下の例のようにDjangoのシークレットキー、S3へのアクセスキー・バケット名、メール通知用のアプリパスワード等を記載
+2. chapter/src/project/settings_local.py ファイルに以下の例のようにDjangoのシークレットキー、S3へのアクセスキー・バケット名、メール通知用のアプリパスワード等を記載（S3バケットのポリシー設定を忘れずに）
 
 > SECRET_KEY = 'django-insecure-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 
@@ -287,6 +287,7 @@ docker compose stop
 
 ### djangoコンテナ又はceleryコンテナが立ちあがらない原因
 - settings_local.pyの環境設定が不十分
+- S3バケットのポリシー設定が不十分
 <br>
 
   
