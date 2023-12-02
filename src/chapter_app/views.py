@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect,get_object_or_404
 from .forms import SignupForm, LoginForm, UploadForm, EditForm
 from django.contrib.auth import login, logout
-from .create_chapter import save_video, comp_mp4, faster_whisper, create_chap
+from .create_chapter import save_video, celery_process
 from django.conf import settings
 
 # デフォルトのUserモデルを外す
@@ -90,7 +90,7 @@ def upload_view(request):
                 chapter = Chapter(user=user, video_title=video_title, video_file_path=video_path)
                 chapter.save()
 
-                result = comp_mp4.delay(user_id, video_path, video_title)
+                result = celery_process.delay(user_id, video_path, video_title)
 
             return redirect('main')
         else:

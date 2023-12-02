@@ -1,5 +1,6 @@
 #celery関係
 from __future__ import absolute_import, unicode_literals
+from celery import shared_task
 
 # 共通　ファイルパス設定用
 from django.conf import settings
@@ -14,16 +15,11 @@ from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
 from langchain import LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
-#celery関係
-from celery import shared_task
 # User,Chapterのデータベースを操作
 from .models import User,Chapter
-
 # メール送信モジュール
 from django.core.mail import send_mail
-
-#S3へアップロードboto3
+#S3操作
 import boto3
 
 media_root = str(settings.MEDIA_ROOT)
@@ -52,127 +48,22 @@ def save_video(video_file, video_title):
 
     return video_path
 
+def upload_to_s3(local_path, s3_path):
+    """
+    ローカルファイルをS3にアップロードする関数
+    :param local_path: ローカルのファイルパス
+    :param s3_path: S3に保存するパス
+    """
+    # S3リソースオブジェクトを作成
+    s3 = boto3.resource(
+        's3',
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
 
-# 動画圧縮関数
-# 動画ファイルのパスと動画タイトルを与えると、動画を圧縮して圧縮動画の保存先パスを返す
-# celeryで処理する関数に設定
-@shared_task
-def comp_mp4(user_id, video_path, video_title):
-    try:
-        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        user = User.objects.get(pk=user_id)
-        user_email = user.email
-        chapter = Chapter.objects.get(video_title=video_title)
-        chapter.status = '文字起こし中'
-        chapter.save()
-
-        # faster-whisperで文字起こし
-        transcription_path = faster_whisper(video_path, video_title)
-        print('文字起こし完了')
-
-        # ローカルのtranscriptionファイルをS3に保存
-        upload_to_s3(transcription_path, f"storage/transcriptions/trans_{video_title}.txt")
-        transcription_url = f"{media_url}/transcriptions/trans_{video_title}.txt"
-
-        # 音声テキストファイルからテキストデータを読み込み
-        with open(transcription_path, encoding="utf-8_sig") as f:
-            state_of_the_union = f.read()
-        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        user = User.objects.get(pk=user_id)
-        user_email = user.email
-        chapter = Chapter.objects.get(video_title=video_title)
-        chapter.status = 'チャプター生成中'
-        chapter.chapter_data = state_of_the_union
-        chapter.save()
-
-        # メール送信
-        # """題名"""
-        subject = 'チャプたん通知（文字起こし）'
-        # """本文"""
-        message_title = 'チャプたんで動画「' + video_title + '」の文字起こしが完了しました。'
-        message = message_title
-        # """送信元メールアドレス"""
-        from_email = "hackathon0701@gmail.com"
-        # """宛先メールアドレス"""
-        recipient_list = [
-            user_email
-        ]
-        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-
-        # チャプター生成関数
-        chapter_text = create_chap(transcription_path, video_title)
-        print('チャプター生成完了')
-
-        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        chapter = Chapter.objects.get(video_title=video_title)
-        chapter.chapter_data = chapter_text
-        chapter.status = '完了'
-        chapter.save()
-
-        # メール送信
-        # """題名"""
-        subject = 'チャプたん通知（チャプター生成完了）'
-        # """本文"""
-        message_title = 'チャプたんで動画「' + video_title + '」のチャプター生成が完了しました。'
-        message = message_title
-        # """送信元メールアドレス"""
-        from_email = "hackathon0701@gmail.com"
-        # """宛先メールアドレス"""
-        recipient_list = [
-            user_email
-        ]
-        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-
-        # #動画の圧縮・保存
-        # comp_video_path = f"{media_root}/comp_videos/comp_{video_title}.mp4"
-        # # 動画の高さを720で固定
-        # subprocess.call(f'ffmpeg -i "{video_path}" -crf 36 -vf scale=-2:360 "{comp_video_path}"', shell=True)
-        # print('動画圧縮完了')
-        # # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        # user = User.objects.get(pk=user_id)
-        # user_email = user.email
-        # chapter = Chapter.objects.get(video_title=video_title)
-        # chapter.status = '動画圧縮・保存も完了'
-        # chapter.video_file_path = f"/storage/comp_videos/comp_{video_title}.mp4"
-        # chapter.save()
-
-        # # メール送信
-        # # """題名"""
-        # subject = 'チャプたん通知（動画圧縮ALL完了）'
-        # # """本文"""
-        # message_title = 'チャプたんで動画「' + video_title + '」の圧縮が完了しました。'
-        # message = message_title
-        # # """送信元メールアドレス"""
-        # from_email = "hackathon0701@gmail.com"
-        # # """宛先メールアドレス"""
-        # recipient_list = [
-        #     user_email
-        # ]
-        # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-
-    except Exception as e:
-        # Chapterでエラーが起きた際の例外処理
-        user = User.objects.get(pk=user_id)
-        user_email = user.email
-        chapter = Chapter.objects.get(video_title=video_title)
-        chapter.status = 'Celeryエラー'
-        # chapter.video_file_path = f"/storage/comp_videos/comp_{video_title}.mp4"
-        chapter.save()
-
-        # メール送信
-        # """題名"""
-        subject = 'チャプたん通知（エラー）'
-        # """本文"""
-        message_title = 'チャプたんで動画「' + video_title + '」の処理中にエラーが発生しました。'
-        message = message_title
-        # """送信元メールアドレス"""
-        from_email = "hackathon0701@gmail.com"
-        # """宛先メールアドレス"""
-        recipient_list = [
-            user_email
-        ]
-        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-        return e
+    # ファイルをアップロード
+    bucket = s3.Bucket(settings.AWS_STORAGE_BUCKET_NAME)
+    bucket.upload_file(local_path, s3_path)
 
 #秒数を時間、分、秒に変換する関数を作成 
 def seconds_to_hms(seconds):
@@ -246,20 +137,79 @@ def create_chap(transcription_path, video_title):
 
     return chapter_text
 
+# メール送信関数
+# 引数に与えたsubject(件名)、message（本文）、user_email(ユーザーのメールアドレス)をもとにメールを送信する
+def send_email(subject, message, user_email):
+    recipient_list = [
+        user_email
+    ]
+    send_mail(subject, message, None, recipient_list, fail_silently=False)
 
-def upload_to_s3(local_path, s3_path):
-    """
-    ローカルファイルをS3にアップロードする関数
-    :param local_path: ローカルのファイルパス
-    :param s3_path: S3に保存するパス
-    """
-    # S3リソースオブジェクトを作成
-    s3 = boto3.resource(
-        's3',
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
-    )
+# データベース保存関数
+# chapterデータベースから動画タイトルをもとにデータを取得し、引数で指定された情報を上書きする
+def save_chapter(video_title, *, chapter_data="None", status="None", video_file_path="None"):
+    chapter = Chapter.objects.get(video_title=video_title)
+    # chapter_dataが指定されていれば上書き
+    if chapter_data is not None:
+        chapter.chapter_data = chapter_data
+    # statusが指定されていれば上書き
+    if status is not None:
+        chapter.status = status
+    # video_file_pathが指定されていれば上書き
+    if video_file_path is not None:
+        chapter.video_file_path = video_file_path
+    chapter.save()
 
-    # ファイルをアップロード
-    bucket = s3.Bucket(settings.AWS_STORAGE_BUCKET_NAME)
-    bucket.upload_file(local_path, s3_path)
+# celeryで処理する関数に設定
+@shared_task
+def celery_process(user_id, video_path, video_title):
+    try:
+        user = User.objects.get(pk=user_id)
+        user_email = user.email
+
+        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
+        save_chapter(video_title, status='文字起こし中')
+        
+        # faster-whisperで文字起こし
+        transcription_path = faster_whisper(video_path, video_title)
+        print('文字起こし完了')
+        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
+        save_chapter(video_title, status='チャプター生成中')
+        # ローカルのtranscriptionファイルをS3に保存
+        upload_to_s3(transcription_path, f"storage/transcriptions/trans_{video_title}.txt")
+        transcription_url = f"{media_url}/transcriptions/trans_{video_title}.txt"
+        
+        # 音声テキストファイルからテキストデータを読み込み
+        with open(transcription_path, encoding="utf-8_sig") as f:
+            state_of_the_union = f.read()
+
+        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
+        save_chapter(video_title, status = 'チャプター生成中', chapter_data=state_of_the_union)
+        # メール送信
+        subject = 'チャプたん通知（文字起こし）'
+        message = 'チャプたんで動画「' + video_title + '」の文字起こしが完了しました。'
+        send_email(subject, message, user_email)
+       
+
+        # openAIでチャプター生成
+        chapter_text = create_chap(transcription_path, video_title)
+        print('チャプター生成完了')
+        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
+        save_chapter(video_title, status='完了', chapter_data=chapter_text)
+        # メール送信
+        subject = 'チャプたん通知（完了）'
+        message = 'チャプたんで動画「' + video_title + '」のチャプター生成が完了しました。'
+        send_email(subject, message, user_email)
+
+
+    except Exception as e:
+        # Chapterでエラーが起きた際の例外処理
+        print(e)
+        user = User.objects.get(pk=user_id)
+        user_email = user.email
+        
+        save_chapter(video_title, status='処理エラー')
+
+        subject = 'チャプたん通知（エラー）'
+        message = 'チャプたんで動画「' + video_title + '」の処理中にエラーが発生しました。'
+        send_email(subject, message, user_email)
