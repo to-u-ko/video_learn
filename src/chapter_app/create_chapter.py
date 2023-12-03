@@ -22,48 +22,6 @@ from django.core.mail import send_mail
 #S3操作
 import boto3
 
-media_root = str(settings.MEDIA_ROOT)
-# media_url = str(settings.MEDIA_URL)
-bucket_name = str(settings.AWS_STORAGE_BUCKET_NAME)
-media_url = "https://" + bucket_name + ".s3.ap-northeast-1.amazonaws.com/storage"
-
-"""保存先のディレクトリ構成
-src/storage/viedos→アップロードされた動画を保存
-src/storage/comp_videos→圧縮された動画を保存
-src/storage/transcriptions→文字起こしテキストファイルを保存
-"""
-
-# 動画保存関数
-# 動画ファイルと動画タイトルを渡すと、動画ファイルを保存して保存先のパスを返す
-def save_video(video_file, video_title):
-    video_path = f"{media_root}/videos/{video_title}.mp4"
-    # ファイルシステムに保存
-    with open(video_path, 'wb+') as destination:
-        for chunk in video_file.chunks():
-            destination.write(chunk)
-
-    # ローカルの動画ファイルをS3に保存
-    upload_to_s3(video_path, f"storage/videos/{video_title}.mp4")
-    video_path = f"{media_url}/videos/{video_title}.mp4"
-
-    return video_path
-
-def upload_to_s3(local_path, s3_path):
-    """
-    ローカルファイルをS3にアップロードする関数
-    :param local_path: ローカルのファイルパス
-    :param s3_path: S3に保存するパス
-    """
-    # S3リソースオブジェクトを作成
-    s3 = boto3.resource(
-        's3',
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
-    )
-
-    # ファイルをアップロード
-    bucket = s3.Bucket(settings.AWS_STORAGE_BUCKET_NAME)
-    bucket.upload_file(local_path, s3_path)
 
 #秒数を時間、分、秒に変換する関数を作成 
 def seconds_to_hms(seconds):
@@ -75,7 +33,7 @@ def seconds_to_hms(seconds):
 # 文字起こし関数
 # 圧縮動画のファイルパスと動画タイトルを与えると、文字起こしをしてテキストのファイルパスを返す
 def faster_whisper(comp_video_path, video_title):
-    transcription_path = f"{media_root}/transcriptions/trans_{video_title}.txt"
+    transcription_path = f"/code/storage//transcriptions/trans_{video_title}.txt"
 
     model_size = "medium"
     model = WhisperModel(model_size, device="auto", compute_type="float32")
@@ -147,7 +105,7 @@ def send_email(subject, message, user_email):
 
 # データベース保存関数
 # chapterデータベースから動画タイトルをもとにデータを取得し、引数で指定された情報を上書きする
-def save_chapter(video_title, *, chapter_data="None", status="None", video_file_path="None"):
+def save_chapter(video_title, *, chapter_data=None, status=None, video_file_path=None):
     chapter = Chapter.objects.get(video_title=video_title)
     # chapter_dataが指定されていれば上書き
     if chapter_data is not None:
@@ -176,8 +134,8 @@ def celery_process(user_id, video_path, video_title):
         # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
         save_chapter(video_title, status='チャプター生成中')
         # ローカルのtranscriptionファイルをS3に保存
-        upload_to_s3(transcription_path, f"storage/transcriptions/trans_{video_title}.txt")
-        transcription_url = f"{media_url}/transcriptions/trans_{video_title}.txt"
+        # upload_to_s3(transcription_path, f"storage/transcriptions/trans_{video_title}.txt")
+        # transcription_url = f"{media_url}/transcriptions/trans_{video_title}.txt"
         
         # 音声テキストファイルからテキストデータを読み込み
         with open(transcription_path, encoding="utf-8_sig") as f:

@@ -6,3 +6,4 @@ src/storage/videos/*.mp4
 src/storage/comp_videos/*.mp4
 src/storage/transcriptions/*.txt
 src/project/settings_local.py
+src/chapt_app/old_create_chap.py

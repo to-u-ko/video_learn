@@ -16,9 +16,14 @@ class SignupForm(UserCreationForm):
 class LoginForm(AuthenticationForm):
     pass
 
-class UploadForm(forms.Form):
-    video_title = forms.CharField(max_length=256,label='動画タイトル')
-    video_file = forms.FileField(widget=forms.FileInput(attrs={'accept':'.mp4'}),label='動画ファイル')
+class UploadForm(forms.ModelForm):
+    class Meta:
+        model=Chapter
+        fields=['video_title', 'video_file']
+        labels={
+           'video_title':'タイトル',
+           'video_file':'動画ファイル'
+           }
 
     def clean_video_title(self):
         video_title = self.cleaned_data.get('video_title')
@@ -26,7 +31,7 @@ class UploadForm(forms.Form):
         #既存の動画と重複しているかチェック
         if Chapter.objects.filter(video_title=video_title).exists():
             raise forms.ValidationError('同じタイトルが既に存在しています。')
-        
+                
         return video_title
 
 class EditForm(forms.ModelForm):
