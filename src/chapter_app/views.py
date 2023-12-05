@@ -22,7 +22,6 @@ def signup_view(request):
             user = form.save()
             login(request,user)
             return redirect(to='/user/')
-
     else:
         form = SignupForm()
     

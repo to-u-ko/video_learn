@@ -22,6 +22,8 @@ from django.core.mail import send_mail
 #S3操作
 import boto3
 
+from django.core.files.base import ContentFile
+
 
 #秒数を時間、分、秒に変換する関数を作成 
 def seconds_to_hms(seconds):
@@ -33,28 +35,30 @@ def seconds_to_hms(seconds):
 # 文字起こし関数
 # 圧縮動画のファイルパスと動画タイトルを与えると、文字起こしをしてテキストのファイルパスを返す
 def faster_whisper(comp_video_path, video_title):
-    transcription_path = f"/code/storage//transcriptions/trans_{video_title}.txt"
-
     model_size = "medium"
     model = WhisperModel(model_size, device="auto", compute_type="float32")
 
     ####タイムスタンプ付き、テキストのみ書き出し####
     segments, info = model.transcribe(comp_video_path, beam_size=5, temperature=1.0, language="ja")
 
-    with open(transcription_path, 'w',encoding="utf-8") as f:
-        for segment in segments:
-            time_formatted = seconds_to_hms(segment.start)
-            print(time_formatted)
-            f.write(f"[{time_formatted}] {segment.text}\n")
+    # with open(transcription_path, 'w',encoding="utf-8") as f:
+    transcription_text = ''
+    for segment in segments:
+        time_formatted = seconds_to_hms(segment.start)
+        print(time_formatted)
+        transcription_text += f"[{time_formatted}] {segment.text}\n"
 
-    return transcription_path
+    transcription_file = ContentFile(transcription_text, f'{video_title}.txt')
+    save_chapter(video_title, transcription_file=transcription_file)
+
+    return transcription_text
 
 
 # チャプター生成関数
 # 文字起こしテキストのファイルパスと動画タイトルを与えると、チャプターテキストを返す
-def create_chap(transcription_path, video_title):
+def create_chap(transcription_text, video_title):
     # 音声テキストファイルからテキストデータを読み込み
-    with open(transcription_path, encoding="utf-8_sig") as f:
+    with open(transcription_text, encoding="utf-8_sig") as f:
         state_of_the_union = f.read()
 
     # chunk_sizeなど
@@ -105,7 +109,7 @@ def send_email(subject, message, user_email):
 
 # データベース保存関数
 # chapterデータベースから動画タイトルをもとにデータを取得し、引数で指定された情報を上書きする
-def save_chapter(video_title, *, chapter_data=None, status=None, video_file_path=None):
+def save_chapter(video_title, *, chapter_data=None, status=None, video_file=None, transcription_file=None):
     chapter = Chapter.objects.get(video_title=video_title)
     # chapter_dataが指定されていれば上書き
     if chapter_data is not None:
@@ -114,8 +118,12 @@ def save_chapter(video_title, *, chapter_data=None, status=None, video_file_path
     if status is not None:
         chapter.status = status
     # video_file_pathが指定されていれば上書き
-    if video_file_path is not None:
-        chapter.video_file_path = video_file_path
+    if video_file is not None:
+        chapter.video_file = video_file
+    # transcription_file が指定されていれば上書き
+    if transcription_file is not None:
+        chapter.transcription_file = transcription_file
+
     chapter.save()
 
 # celeryで処理する関数に設定
