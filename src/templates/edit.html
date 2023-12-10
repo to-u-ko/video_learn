@@ -52,7 +52,7 @@
         controls
         preload="auto"
         playsinline
-        src="{{ chapter.video_file_path }}"
+        src="{{ chapter.video_path.url }}"
         style="width: 100%; height: auto"
         id="videoPlayer"
       ></video>
@@ -112,9 +112,9 @@
       <p><strong>更新日時:</strong> {{ chapter.updated_at }}</p>
       <p><strong>作成者:</strong> {{ chapter.user.username }}</p>
     </form>
-    {% if transcription_url != "文字起こし未完了" %}
+    {% if chapter.transcription_path %}
       <div style="text-align:right;">
-        <a href="{{ transcription_url }}">文字起こしテキストをダウンロード</a></div>
+        <a href="{{ chapter.transcription_path.url }}" download>文字起こしテキストをダウンロード</a></div>
       </div>
     {% endif %}
   {% endblock %}

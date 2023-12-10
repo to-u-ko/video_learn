@@ -27,8 +27,8 @@ class Chapter(models.Model):
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
     status       = models.CharField(max_length=50, default='処理順番待ち')
-    video_file   = models.FileField(upload_to=video_directory_path)
-    transcription_file = models.FileField(upload_to='storage/transcriptions/', null=True)
+    video_path   = models.FileField(upload_to=video_directory_path)
+    transcription_path = models.FileField(upload_to='storage/transcriptions/', null=True)
 
     def __str__(self):
         return self.video_title

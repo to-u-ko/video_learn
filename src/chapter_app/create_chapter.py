@@ -25,6 +25,35 @@ import boto3
 from django.core.files.base import ContentFile
 
 
+# メール送信関数
+# 引数に与えたsubject(件名)、message（本文）、user_email(ユーザーのメールアドレス)をもとにメールを送信する
+def send_email(subject, message, user_email):
+    recipient_list = [
+        user_email
+    ]
+    send_mail(subject, message, None, recipient_list, fail_silently=False)
+
+
+# データベース保存関数
+# chapterデータベースから動画タイトルをもとにデータを取得し、引数で指定された情報を上書きする
+def save_chapter(chapter_id, *, chapter_data=None, status=None, video_path=None, transcription_path=None):
+    chapter = Chapter.objects.get(id=chapter_id)
+    # chapter_dataが指定されていれば上書き
+    if chapter_data is not None:
+        chapter.chapter_data = chapter_data
+    # statusが指定されていれば上書き
+    if status is not None:
+        chapter.status = status
+    # video_pathが指定されていれば上書き
+    if video_path is not None:
+        chapter.video_path = video_path
+    # transcription_path が指定されていれば上書き
+    if transcription_path is not None:
+        chapter.transcription_path = transcription_path
+
+    chapter.save()
+
+
 #秒数を時間、分、秒に変換する関数を作成 
 def seconds_to_hms(seconds):
     hours = seconds // 3600
@@ -32,14 +61,17 @@ def seconds_to_hms(seconds):
     seconds = seconds % 60
     return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
   
+
 # 文字起こし関数
 # 圧縮動画のファイルパスと動画タイトルを与えると、文字起こしをしてテキストのファイルパスを返す
-def faster_whisper(comp_video_path, video_title):
+def faster_whisper(chapter_id):
+    chapter = Chapter.objects.get(id=chapter_id)
+
     model_size = "medium"
     model = WhisperModel(model_size, device="auto", compute_type="float32")
 
     ####タイムスタンプ付き、テキストのみ書き出し####
-    segments, info = model.transcribe(comp_video_path, beam_size=5, temperature=1.0, language="ja")
+    segments, info = model.transcribe(chapter.video_path.url, beam_size=5, temperature=1.0, language="ja")
 
     # with open(transcription_path, 'w',encoding="utf-8") as f:
     transcription_text = ''
@@ -48,18 +80,12 @@ def faster_whisper(comp_video_path, video_title):
         print(time_formatted)
         transcription_text += f"[{time_formatted}] {segment.text}\n"
 
-    transcription_file = ContentFile(transcription_text, f'{video_title}.txt')
-    save_chapter(video_title, transcription_file=transcription_file)
-
     return transcription_text
 
 
 # チャプター生成関数
 # 文字起こしテキストのファイルパスと動画タイトルを与えると、チャプターテキストを返す
-def create_chap(transcription_text, video_title):
-    # 音声テキストファイルからテキストデータを読み込み
-    with open(transcription_text, encoding="utf-8_sig") as f:
-        state_of_the_union = f.read()
+def create_chap(transcription_text):
 
     # chunk_sizeなど
     text_splitter = RecursiveCharacterTextSplitter(
@@ -69,7 +95,7 @@ def create_chap(transcription_text, video_title):
         is_separator_regex = False,
     )
 
-    texts = text_splitter.create_documents([state_of_the_union])
+    texts = text_splitter.create_documents([transcription_text])
 
     # 言語モデルとしてOpenAIのモデルを指定
     llm = OpenAI(model_name="gpt-4")
@@ -99,72 +125,39 @@ def create_chap(transcription_text, video_title):
 
     return chapter_text
 
-# メール送信関数
-# 引数に与えたsubject(件名)、message（本文）、user_email(ユーザーのメールアドレス)をもとにメールを送信する
-def send_email(subject, message, user_email):
-    recipient_list = [
-        user_email
-    ]
-    send_mail(subject, message, None, recipient_list, fail_silently=False)
-
-# データベース保存関数
-# chapterデータベースから動画タイトルをもとにデータを取得し、引数で指定された情報を上書きする
-def save_chapter(video_title, *, chapter_data=None, status=None, video_file=None, transcription_file=None):
-    chapter = Chapter.objects.get(video_title=video_title)
-    # chapter_dataが指定されていれば上書き
-    if chapter_data is not None:
-        chapter.chapter_data = chapter_data
-    # statusが指定されていれば上書き
-    if status is not None:
-        chapter.status = status
-    # video_file_pathが指定されていれば上書き
-    if video_file is not None:
-        chapter.video_file = video_file
-    # transcription_file が指定されていれば上書き
-    if transcription_file is not None:
-        chapter.transcription_file = transcription_file
-
-    chapter.save()
 
 # celeryで処理する関数に設定
 @shared_task
-def celery_process(user_id, video_path, video_title):
+def celery_process(user_id, chapter_id):
     try:
         user = User.objects.get(pk=user_id)
         user_email = user.email
+        chapter = Chapter.objects.get(id=chapter_id)
 
         # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        save_chapter(video_title, status='文字起こし中')
+        save_chapter(chapter_id, status='文字起こし中')
         
         # faster-whisperで文字起こし
-        transcription_path = faster_whisper(video_path, video_title)
+        transcription_text = faster_whisper(chapter_id)
         print('文字起こし完了')
-        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        save_chapter(video_title, status='チャプター生成中')
-        # ローカルのtranscriptionファイルをS3に保存
-        # upload_to_s3(transcription_path, f"storage/transcriptions/trans_{video_title}.txt")
-        # transcription_url = f"{media_url}/transcriptions/trans_{video_title}.txt"
-        
-        # 音声テキストファイルからテキストデータを読み込み
-        with open(transcription_path, encoding="utf-8_sig") as f:
-            state_of_the_union = f.read()
 
         # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        save_chapter(video_title, status = 'チャプター生成中', chapter_data=state_of_the_union)
+        transcription_file = ContentFile(transcription_text.encode('utf-8_sig'))
+        save_chapter(chapter_id, status = 'チャプター生成中', transcription_path=transcription_file)
+
         # メール送信
         subject = 'チャプたん通知（文字起こし）'
-        message = 'チャプたんで動画「' + video_title + '」の文字起こしが完了しました。'
+        message = f'チャプたんで動画「{chapter.video_title}」の文字起こしが完了しました。'
         send_email(subject, message, user_email)
-       
 
         # openAIでチャプター生成
-        chapter_text = create_chap(transcription_path, video_title)
+        chapter_text = create_chap(transcription_text)
         print('チャプター生成完了')
         # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        save_chapter(video_title, status='完了', chapter_data=chapter_text)
+        save_chapter(chapter_id, status='完了', chapter_data=chapter_text)
         # メール送信
         subject = 'チャプたん通知（完了）'
-        message = 'チャプたんで動画「' + video_title + '」のチャプター生成が完了しました。'
+        message = f'チャプたんで動画「{chapter.video_title}」のチャプター生成が完了しました。'
         send_email(subject, message, user_email)
 
 
@@ -174,8 +167,8 @@ def celery_process(user_id, video_path, video_title):
         user = User.objects.get(pk=user_id)
         user_email = user.email
         
-        save_chapter(video_title, status='処理エラー')
+        save_chapter(chapter_id, status='処理エラー')
 
         subject = 'チャプたん通知（エラー）'
-        message = 'チャプたんで動画「' + video_title + '」の処理中にエラーが発生しました。'
+        message = f'チャプたんで動画「{chapter.video_title}」の処理中にエラーが発生しました。'
         send_email(subject, message, user_email)
