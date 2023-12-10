@@ -19,10 +19,10 @@ class LoginForm(AuthenticationForm):
 class UploadForm(forms.ModelForm):
     class Meta:
         model=Chapter
-        fields=['video_title', 'video_file']
+        fields=['video_title', 'video_path']
         labels={
            'video_title':'タイトル',
-           'video_file':'動画ファイル'
+           'video_path':'動画ファイル'
            }
 
     def clean_video_title(self):

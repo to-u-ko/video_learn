@@ -25,11 +25,11 @@ def signup_view(request):
     else:
         form = SignupForm()
     
-    param = {
+    params = {
         'form': form
     }
 
-    return render(request, 'signup.html', param)
+    return render(request, 'signup.html', params)
 
 def login_view(request):
     if request.method == 'POST':
@@ -49,12 +49,12 @@ def login_view(request):
         form = LoginForm()
         next = request.GET.get('next')
 
-    param = {
+    params = {
         'form': form,
         'next': next
     }
 
-    return render(request, 'login.html', param)
+    return render(request, 'login.html', params)
 
 def logout_view(request):
     logout(request)
@@ -82,7 +82,7 @@ def upload_view(request):
             chapter.save()
             print('動画アップロード完了')
             user_id = request.user.id
-            #result = celery_process.delay(user_id, video_path, video_title)
+            celery_process.delay(user_id, chapter.id)
 
             return redirect('main')
 
@@ -100,12 +100,12 @@ def main_view(request):
     #chapterモデルからvideo_titleのリストを取得
     chapter_list = Chapter.objects.all()[::-1]
 
-    context = {
+    params = {
         'users' : users,
         'chapter_list': chapter_list,
     }
 
-    return render(request, 'main.html', context)
+    return render(request, 'main.html', params)
 
 
 @login_required
@@ -120,13 +120,7 @@ def edit_view(request, pk):
     else:
         form = EditForm(instance=chapter)
         chapter_lines = chapter.chapter_data.splitlines()
-        #bucket_name = str(settings.AWS_STORAGE_BUCKET_NAME)
-        #media_url = "https://" + bucket_name + ".s3.ap-northeast-1.amazonaws.com/storage"
-        if chapter.status == "チャプター生成中" or chapter.status == "完了":
-            transcription_url = f"/code/storage/transcriptions/trans_{chapter.video_title}.txt"            
-        else:
-            transcription_url = "文字起こし未完了"   
 
-    ctx = {'form': form, 'chapter': chapter, 'chapter_lines': chapter_lines, 'transcription_url': transcription_url}
+    params = {'form': form, 'chapter': chapter, 'chapter_lines': chapter_lines}
 
-    return render(request, 'edit.html', ctx)
+    return render(request, 'edit.html', params)
