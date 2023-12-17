@@ -3,6 +3,7 @@ from .forms import SignupForm, LoginForm, UploadForm, EditForm
 from django.contrib.auth import login, logout
 from .create_chapter import celery_process
 from django.conf import settings
+from django.http import HttpResponseRedirect, HttpResponse
 
 # デフォルトのUserモデルを外す
 # from django.contrib.auth.models import User
@@ -11,8 +12,8 @@ from django.urls import reverse_lazy
 #カスタムのUserモデルを適用
 from .models import User, Chapter
 
-# Djangoのメッセージ表示
-from django.contrib import messages
+import boto3
+from botocore.client import Config
 
 def signup_view(request):
     if request.method == 'POST':
@@ -124,3 +125,21 @@ def edit_view(request, pk):
     params = {'form': form, 'chapter': chapter, 'chapter_lines': chapter_lines}
 
     return render(request, 'edit.html', params)
+
+@login_required
+def download_transcripion_view(request, pk):
+    chapter = get_object_or_404(Chapter, pk=pk)
+    file_name = chapter.transcription_path
+
+    s3 = boto3.client('s3', config=Config(signature_version='s3v4'))
+    bucket_name = settings.AWS_STORAGE_BUCKET_NAME 
+    
+    # プリサインされたURLの生成
+    presigned_url = s3.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': bucket_name, 'Key': file_name},
+        ExpiresIn=3600
+    )
+
+    # ユーザーをプリサインされたURLにリダイレクト
+    return HttpResponseRedirect(presigned_url)
