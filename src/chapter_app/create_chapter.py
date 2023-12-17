@@ -1,28 +1,23 @@
 #celery関係
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
-
-# 共通　ファイルパス設定用
-from django.conf import settings
-from pathlib import Path
-# 動画圧縮用
-import subprocess
-# 文字起こし用
-from faster_whisper import WhisperModel
 # チャプター生成用
 import os
 from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
 from langchain import LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-# User,Chapterのデータベースを操作
+# User,Chapterのデータベース操作用
 from .models import User,Chapter
-# メール送信モジュール
+# メール送信用
 from django.core.mail import send_mail
-#S3操作
+# AWS_Sagemaker操作用
 import boto3
+import sagemaker
+from sagemaker.processing import ScriptProcessor, ProcessingInput, ProcessingOutput
 
 from django.core.files.base import ContentFile
+from django.conf import settings
 
 
 # メール送信関数
@@ -52,35 +47,6 @@ def save_chapter(chapter_id, *, chapter_data=None, status=None, video_path=None,
         chapter.transcription_path = transcription_path
 
     chapter.save()
-
-
-#秒数を時間、分、秒に変換する関数を作成 
-def seconds_to_hms(seconds):
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
-  
-
-# 文字起こし関数
-# 圧縮動画のファイルパスと動画タイトルを与えると、文字起こしをしてテキストのファイルパスを返す
-def faster_whisper(chapter_id):
-    chapter = Chapter.objects.get(id=chapter_id)
-
-    model_size = "medium"
-    model = WhisperModel(model_size, device="auto", compute_type="float32")
-
-    ####タイムスタンプ付き、テキストのみ書き出し####
-    segments, info = model.transcribe(chapter.video_path.url, beam_size=5, temperature=1.0, language="ja")
-
-    # with open(transcription_path, 'w',encoding="utf-8") as f:
-    transcription_text = ''
-    for segment in segments:
-        time_formatted = seconds_to_hms(segment.start)
-        print(time_formatted)
-        transcription_text += f"[{time_formatted}] {segment.text}\n"
-
-    return transcription_text
 
 
 # チャプター生成関数
@@ -125,6 +91,31 @@ def create_chap(transcription_text):
 
     return chapter_text
 
+def sagemaker_job(video_title):
+    boto_session = boto3.session.Session(region_name="ap-northeast-1")
+    sagemaker_client = boto_session.client(service_name='sagemaker', region_name="ap-northeast-1")
+    sagemaker_session = sagemaker.session.Session(boto_session=boto_session, sagemaker_client=sagemaker_client)
+
+    script_processor = ScriptProcessor(
+                    sagemaker_session = sagemaker_session,
+                    image_uri= '612418102865.dkr.ecr.ap-northeast-1.amazonaws.com/sage-whisper:1.0',
+                    role= 'arn:aws:iam::612418102865:role/service-role/AmazonSageMaker-ExecutionRole-20231112T121808',
+                    command=['python3'],
+                    instance_count=1,
+                    instance_type='ml.g4dn.xlarge')
+
+    script_processor.run(code='/code/chapter_app/sage_whisper.py',
+                        inputs=[ProcessingInput(
+                            source= f's3://s3-chapter/storage/videos/{video_title}.mp4',
+                            destination='/opt/ml/processing/input')],
+                        outputs=[ProcessingOutput(
+                            source='/opt/ml/processing/output',
+                            destination='s3://s3-chapter/storage/transcriptions/')],
+                            arguments=['--video_title', video_title])
+    
+    transcription_path = f"s3://s3-chapter/storage/transcriptions/{video_title}.txt"
+
+    return transcription_path
 
 # celeryで処理する関数に設定
 @shared_task
@@ -138,17 +129,13 @@ def celery_process(user_id, chapter_id):
         save_chapter(chapter_id, status='文字起こし中')
         
         # faster-whisperで文字起こし
-        transcription_text = faster_whisper(chapter_id)
+        transcriptin_path = sagemaker_job(chapter.video_title)
         print('文字起こし完了')
 
+        """
         # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
         transcription_file = ContentFile(transcription_text.encode('utf-8_sig'))
         save_chapter(chapter_id, status = 'チャプター生成中', transcription_path=transcription_file)
-
-        # メール送信
-        subject = 'チャプたん通知（文字起こし）'
-        message = f'チャプたんで動画「{chapter.video_title}」の文字起こしが完了しました。'
-        send_email(subject, message, user_email)
 
         # openAIでチャプター生成
         chapter_text = create_chap(transcription_text)
@@ -159,7 +146,7 @@ def celery_process(user_id, chapter_id):
         subject = 'チャプたん通知（完了）'
         message = f'チャプたんで動画「{chapter.video_title}」のチャプター生成が完了しました。'
         send_email(subject, message, user_email)
-
+        """
 
     except Exception as e:
         # Chapterでエラーが起きた際の例外処理

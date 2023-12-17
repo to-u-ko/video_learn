@@ -17,3 +17,5 @@ django-redis
 
 boto3
 django-storages
+
+sagemaker

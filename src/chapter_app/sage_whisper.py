@@ -2,7 +2,7 @@
 from faster_whisper import WhisperModel
 import argparse
 
-#秒数を時間、分、秒に変換する関数を作成 
+#秒数を時間、分、秒に変換する関数
 def seconds_to_hms(seconds):
     hours = seconds // 3600
     minutes = (seconds % 3600) // 60
@@ -10,7 +10,7 @@ def seconds_to_hms(seconds):
     return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
 
 # 文字起こし関数
-# 圧縮動画のファイルパスと動画タイトルを与えると、文字起こしをしてテキストのファイルパスを返す
+# 動画タイトルを与えると、その動画の文字起こしをしてテキストファイルを生成する
 def faster_whisper(video_title):
     video_path = f'/opt/ml/processing/input/{video_title}.mp4'
     model_size = "medium"
