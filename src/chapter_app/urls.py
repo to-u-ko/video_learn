@@ -9,5 +9,5 @@ urlpatterns = [
     path('upload/', views.upload_view, name='upload'),
     path('main/', views.main_view, name='main'),
     path('edit/<int:pk>',views.edit_view, name='edit'),
-    # path('celery/', views.celery, name='celery'),
+    path('download_transcription/<int:pk>', views.download_transcripion_view, name='download_transcription')
 ]

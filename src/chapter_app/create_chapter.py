@@ -49,8 +49,46 @@ def save_chapter(chapter_id, *, chapter_data=None, status=None, video_path=None,
     chapter.save()
 
 
+# sagemakerによる文字起こし処理関数
+# boto3を使用してsagemaker processingを呼び出しfaster_whipserによる文字起こしを実行する
+def sagemaker_job(video_title):
+    script_processor = ScriptProcessor(
+                    image_uri= settings.IMAGE_URI,
+                    role= settings.ROLE,
+                    command=['python3'],
+                    instance_count=1,
+                    instance_type='ml.g4dn.xlarge')
+
+    script_processor.run(code='/code/chapter_app/sage_whisper.py',
+                        inputs=[ProcessingInput(
+                            source= f's3://s3-chapter/storage/videos/{video_title}.mp4',
+                            destination='/opt/ml/processing/input')],
+                        outputs=[ProcessingOutput(
+                            source='/opt/ml/processing/output',
+                            destination='s3://s3-chapter/storage/transcriptions/')],
+                            arguments=['--video_title', video_title])
+    
+    transcription_path = f"storage/transcriptions/{video_title}.txt"
+
+    return transcription_path
+
+
+# S3に保存された文字起こしテキストファイルから中身のテキストを取得
+def get_transcription(transcriptin_path):
+    s3 = boto3.client('s3')
+
+    bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+    file_name = transcriptin_path
+
+    # S3からファイルの内容を取得
+    obj = s3.get_object(Bucket=bucket_name, Key=file_name)
+    file_content = obj['Body'].read().decode('utf-8')
+
+    return file_content
+
+
 # チャプター生成関数
-# 文字起こしテキストのファイルパスと動画タイトルを与えると、チャプターテキストを返す
+# 文字起こしテキストを与えると、チャプターテキストを返す
 def create_chap(transcription_text):
 
     # chunk_sizeなど
@@ -91,31 +129,6 @@ def create_chap(transcription_text):
 
     return chapter_text
 
-def sagemaker_job(video_title):
-    boto_session = boto3.session.Session(region_name="ap-northeast-1")
-    sagemaker_client = boto_session.client(service_name='sagemaker', region_name="ap-northeast-1")
-    sagemaker_session = sagemaker.session.Session(boto_session=boto_session, sagemaker_client=sagemaker_client)
-
-    script_processor = ScriptProcessor(
-                    sagemaker_session = sagemaker_session,
-                    image_uri= '612418102865.dkr.ecr.ap-northeast-1.amazonaws.com/sage-whisper:1.0',
-                    role= 'arn:aws:iam::612418102865:role/service-role/AmazonSageMaker-ExecutionRole-20231112T121808',
-                    command=['python3'],
-                    instance_count=1,
-                    instance_type='ml.g4dn.xlarge')
-
-    script_processor.run(code='/code/chapter_app/sage_whisper.py',
-                        inputs=[ProcessingInput(
-                            source= f's3://s3-chapter/storage/videos/{video_title}.mp4',
-                            destination='/opt/ml/processing/input')],
-                        outputs=[ProcessingOutput(
-                            source='/opt/ml/processing/output',
-                            destination='s3://s3-chapter/storage/transcriptions/')],
-                            arguments=['--video_title', video_title])
-    
-    transcription_path = f"s3://s3-chapter/storage/transcriptions/{video_title}.txt"
-
-    return transcription_path
 
 # celeryで処理する関数に設定
 @shared_task
@@ -124,29 +137,28 @@ def celery_process(user_id, chapter_id):
         user = User.objects.get(pk=user_id)
         user_email = user.email
         chapter = Chapter.objects.get(id=chapter_id)
-
-        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        save_chapter(chapter_id, status='文字起こし中')
         
-        # faster-whisperで文字起こし
+        # statusを「処理中」に変更
+        save_chapter(chapter_id, status='処理中')
+        
+        # sagemakerを呼び出しfaster-whisperで文字起こし
         transcriptin_path = sagemaker_job(chapter.video_title)
+        save_chapter(chapter_id, transcription_path=transcriptin_path)
         print('文字起こし完了')
-
-        """
-        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
-        transcription_file = ContentFile(transcription_text.encode('utf-8_sig'))
-        save_chapter(chapter_id, status = 'チャプター生成中', transcription_path=transcription_file)
+        
+        # S3に保存された文字起こしファイルから中身のテキストを取得
+        transcription_text = get_transcription(transcriptin_path)
 
         # openAIでチャプター生成
         chapter_text = create_chap(transcription_text)
         print('チャプター生成完了')
-        # Chapterデータベースから動画タイトルをもとにデータを取得し、chapter_dataとstatusを上書き保存
         save_chapter(chapter_id, status='完了', chapter_data=chapter_text)
-        # メール送信
+
+        # 処理完了のメール送信
         subject = 'チャプたん通知（完了）'
         message = f'チャプたんで動画「{chapter.video_title}」のチャプター生成が完了しました。'
         send_email(subject, message, user_email)
-        """
+        
 
     except Exception as e:
         # Chapterでエラーが起きた際の例外処理

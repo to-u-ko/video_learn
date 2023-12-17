@@ -45,7 +45,9 @@
       width: 100%;
     }
   </style>
-  {% endblock header%} {% block main %} {% if chapter.video_file_path != null %}
+  {% endblock header%} 
+  {% block main %}
+  {% if chapter.video_path != null %}
   <div class="video-and-chapters-container">
     <div class="video-wrapper">
       <video
@@ -114,7 +116,7 @@
     </form>
     {% if chapter.transcription_path %}
       <div style="text-align:right;">
-        <a href="{{ chapter.transcription_path.url }}" download>文字起こしテキストをダウンロード</a></div>
+        <a href="{% url 'download_transcription' chapter.id %}">文字起こしテキストをダウンロード</a></div>
       </div>
     {% endif %}
   {% endblock %}
