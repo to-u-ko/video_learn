@@ -7,6 +7,7 @@ from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
 from langchain import LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+import re
 # User,Chapterのデータベース操作用
 from .models import User,Chapter
 # メール送信用
@@ -15,8 +16,7 @@ from django.core.mail import send_mail
 import boto3
 import sagemaker
 from sagemaker.processing import ScriptProcessor, ProcessingInput, ProcessingOutput
-
-from django.core.files.base import ContentFile
+#from django.core.files.base import ContentFile
 from django.conf import settings
 
 
@@ -128,6 +128,23 @@ def create_chap(transcription_text):
         chapter_text += f"{response}\n"
 
     return chapter_text
+
+
+# チャプター取り出し
+def get_chapter(chatgpt_response):
+    pattern = r"^\[\d{2}:\d{2}:\d{2}\]."
+    chapter_lines = [line for line in chatgpt_response.split('\n') if re.match(pattern, line)]
+    chapter_text = "\n".join(chapter_lines)
+
+    return chapter_text
+
+def get_summary_article(chatgpt_response):
+    pattern = r"\[\d{1,2}:\d{2}:\d{2}\]"
+
+    # "[時間]"を"##"に置換
+    summary_article = re.sub(pattern, "##", chatgpt_response)
+    return summary_article
+
 
 
 # celeryで処理する関数に設定

@@ -1,0 +1,26 @@
+<!-- ベース読み込み -->
+{% extends 'base.html' %} {% load static %}
+{% load markdown_extras %}
+
+  <!-- title挿入 -->
+{% block title %}要約記事{% endblock %}
+{% block meta %} 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+{% endblock meta %}
+
+<body>
+  {% block main %}
+  <aside>
+    <li>
+      <a href="{% url 'summary_edit' chapter.id %}">要約編集</a>
+    </li>
+    {% if chapter.transcription_path %}
+    <li>
+      <a href="{% url 'download_transcription' chapter.id %}">文字起こしダウンロード</a>
+    </li>
+    {% endif %}
+  </aside>
+  
+  {{ summary.summary_text | markdown | safe }}
+  
+  {% endblock main %}

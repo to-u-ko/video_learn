@@ -47,3 +47,13 @@ class EditForm(forms.ModelForm):
            }
 
     
+class SummaryForm(forms.ModelForm):
+    class Meta:
+        model=Chapter
+        fields=[
+            'summary_text'
+        ]
+
+        labels={
+            'summary_text':'要約記事'
+        }

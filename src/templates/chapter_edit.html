@@ -1,19 +1,22 @@
 {% extends 'base.html' %}
 
-<head>
   {% block title %}編集ページ{% endblock %}
-</head>
 
-<body>
-  {% block header %}
+  {% block main %}
   <style>
     main {
       grid-row: 2 / 3;
-      grid-column: 2 / 5;
+      grid-column: 1 / 6;
       padding: 50px;
     }
 
+    aside {
+      grid-column: 4 / 5;
+
+    }
+
     .video-and-chapters-container {
+      grid-column: 2 / 5;
       display: grid;
       grid-template-columns: 1fr 2fr 2fr 1fr;
     }
@@ -45,20 +48,30 @@
       width: 100%;
     }
   </style>
-  {% endblock header%} 
-  {% block main %}
+
+  <aside>
+    <li>
+      <a href="{% url 'summary_edit' chapter.id %}">要約編集</a>
+    </li>
+    {% if chapter.transcription_path %}
+    <li>
+      <a href="{% url 'download_transcription' chapter.id %}">文字起こしダウンロード</a>
+    </li>
+    {% endif %}
+  </aside>
+
   {% if chapter.video_path != null %}
-  <div class="video-and-chapters-container">
-    <div class="video-wrapper">
-      <video
-        controls
-        preload="auto"
-        playsinline
-        src="{{ chapter.video_path.url }}"
-        style="width: 100%; height: auto"
-        id="videoPlayer"
-      ></video>
-    </div>
+  <!-- <div class="video-and-chapters-container"> -->
+    <!-- <div class="video-wrapper"> -->
+      <!-- <video -->
+        <!-- controls -->
+        <!-- preload="auto" -->
+        <!-- playsinline -->
+        <!-- src="{{ chapter.video_path.url }}" -->
+        <!-- style="width: 100%; height: auto" -->
+        <!-- id="videoPlayer" -->
+      <!-- ></video> -->
+    <!-- </div> -->
 
     <div class="chapters-wrapper">
       <h3>タイトル：{{ chapter.video_title }}</h3>
@@ -114,10 +127,7 @@
       <p><strong>更新日時:</strong> {{ chapter.updated_at }}</p>
       <p><strong>作成者:</strong> {{ chapter.user.username }}</p>
     </form>
-    {% if chapter.transcription_path %}
-      <div style="text-align:right;">
-        <a href="{% url 'download_transcription' chapter.id %}">文字起こしテキストをダウンロード</a></div>
-      </div>
-    {% endif %}
+  
+
   {% endblock %}
 </body>

@@ -4,8 +4,10 @@ from .models import User, Chapter
 
 admin.site.register(Chapter)
 
+
 @admin.register(User)
 class CustomUserAdmin(DefaultUserAdmin):
     list_display = ('username', 'email', 'is_staff')
     search_fields = ('username', 'email')
     ordering = ('username',)
+
