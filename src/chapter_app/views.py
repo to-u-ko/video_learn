@@ -10,7 +10,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 #カスタムのUserモデルを適用
-from .models import User, Chapter
+from .models import User, Chapter, Summary
 
 import boto3
 from botocore.client import Config
@@ -147,15 +147,16 @@ def download_transcripion_view(request, pk):
 @login_required
 def summary_edit_view(request, pk):
     chapter = get_object_or_404(Chapter, pk=pk)
+    summary = get_object_or_404(Summary, chapter=chapter)
     
     if request.method == 'POST':
-        form = SummaryForm(request.POST, instance=chapter)
+        form = SummaryForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('summary_edit', pk)
     else:
-        form = SummaryForm(instance=chapter)
+        form = SummaryForm(instance=summary)
 
-    params = {'form': form, 'chapter': chapter}
+    params = {'form': form, 'chapter': chapter, 'summary': summary}
 
     return render(request, 'summary_edit.html', params)

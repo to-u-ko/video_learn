@@ -3,7 +3,7 @@ from django import forms
 # from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 # カスタムのUserモデルを適用
-from .models import User, Chapter
+from .models import User, Chapter, Summary
 
 #ファイル拡張子を指定
 from django.core.validators import FileExtensionValidator 
@@ -49,7 +49,7 @@ class EditForm(forms.ModelForm):
     
 class SummaryForm(forms.ModelForm):
     class Meta:
-        model=Chapter
+        model=Summary
         fields=[
             'summary_text'
         ]

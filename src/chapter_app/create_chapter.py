@@ -9,7 +9,7 @@ from langchain import LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import re
 # User,Chapterのデータベース操作用
-from .models import User,Chapter
+from .models import User,Chapter, Summary
 # メール送信用
 from django.core.mail import send_mail
 # AWS_Sagemaker操作用
@@ -87,9 +87,9 @@ def get_transcription(transcriptin_path):
     return file_content
 
 
-# チャプター生成関数
-# 文字起こしテキストを与えると、チャプターテキストを返す
-def create_chap(transcription_text):
+# chatGPTの処理関数_gpt4
+# 文字起こしテキストを与えると、チャプター＆要約されたテキストを返す
+def gpt4_create_chapter_summary(transcription_text):
 
     # chunk_sizeなど
     text_splitter = RecursiveCharacterTextSplitter(
@@ -120,31 +120,61 @@ def create_chap(transcription_text):
     # プロンプトを実行させるチェーンを設定
     llm_chain = LLMChain(llm=llm, prompt=prompt,verbose=True)
 
-    chapter_text = ''
+    chatgpt_response = ''
     # for文で分割した各テキストに対しチェーンを実行
     # 実行結果をoutput.txtに出力
     for original_sentences in texts:
         response = llm_chain.run(original_sentences)
-        chapter_text += f"{response}\n"
+        chatgpt_response += f"{response}\n"
 
-    return chapter_text
+    return chatgpt_response
 
 
-# チャプター取り出し
+# chatGPTの処理関数_gpt4turbo
+# 文字起こしテキストを与えると、チャプター＆要約されたテキストを返す
+def gpt4turbo_create_chapter_summary(transcription_text):
+    original_sentences = transcription_text 
+
+    # 言語モデルとしてOpenAIのモデルを指定
+    llm = OpenAI(model_name="gpt-4-1106-preview")
+
+    # プロンプト文
+    template = """
+    次の文章はITに関する講義を文字起こししたものです。
+    このテキストをテーマごとに分割し、そのテーマの要点をまとめてください。
+    回答は [テーマが開始する時間] テーマのタイトル　テーマの要約 という形式でお願いします。「{original_sentences}」
+    """
+
+    # プロンプトのテンプレート内にあるチャプター分け前のテキストを変数として設定
+    prompt = PromptTemplate(
+        input_variables=["original_sentences"],
+        template=template,
+    )
+
+    # プロンプトを実行させるチェーンを設定
+    llm_chain = LLMChain(llm=llm, prompt=prompt,verbose=False)
+
+    # プロンプトを実行
+    chatgpt_response = llm_chain.run(original_sentences)
+
+    return chatgpt_response
+
+
+# chatGPTの回答からチャプター取り出し
 def get_chapter(chatgpt_response):
     pattern = r"^\[\d{2}:\d{2}:\d{2}\]."
+    # "[時間]"から始まる行のみ抽出
     chapter_lines = [line for line in chatgpt_response.split('\n') if re.match(pattern, line)]
+    # 各行がリスト形式で返ってくるため、それを改行コードで結合させて文字列にする。
     chapter_text = "\n".join(chapter_lines)
-
     return chapter_text
 
-def get_summary_article(chatgpt_response):
+# chatGPTの回答から要約を取り出し
+def get_summary(chatgpt_response):
     pattern = r"\[\d{1,2}:\d{2}:\d{2}\]"
-
     # "[時間]"を"##"に置換
     summary_article = re.sub(pattern, "##", chatgpt_response)
     return summary_article
-
 
 
 # celeryで処理する関数に設定
@@ -167,13 +197,16 @@ def celery_process(user_id, chapter_id):
         transcription_text = get_transcription(transcriptin_path)
 
         # openAIでチャプター生成
-        chapter_text = create_chap(transcription_text)
-        print('チャプター生成完了')
+        chatgpt_response = gpt4turbo_create_chapter_summary(transcription_text)
+        print('chatGPT処理完了')
+        chapter_text = get_chapter(chatgpt_response)
         save_chapter(chapter_id, status='完了', chapter_data=chapter_text)
+        summary_text = get_summary(chatgpt_response)
+        Summary.objects.create(chapter=chapter, summary_text = summary_text)
 
         # 処理完了のメール送信
         subject = 'チャプたん通知（完了）'
-        message = f'チャプたんで動画「{chapter.video_title}」のチャプター生成が完了しました。'
+        message = f'チャプたんで動画「{chapter.video_title}」のチャプターと要約の生成が完了しました。'
         send_email(subject, message, user_email)
         
 
