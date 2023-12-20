@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'chapter_app.apps.ChapterAppConfig',
     'django_celery_results',
+    'mdeditor'
 ]
 
 MIDDLEWARE = [
@@ -170,3 +171,5 @@ CELERYD_LOG_FILE = "./celeryd.log"
 # タスクの標準出力もログ(celeryd.log)に書かれる
 CELERYD_LOG_LEVEL = "INFO"
 
+# mdeditor用
+X_FRAME_OPTIONS = 'SAMEORIGIN'

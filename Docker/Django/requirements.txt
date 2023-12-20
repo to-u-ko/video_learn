@@ -19,3 +19,6 @@ boto3
 django-storages
 
 sagemaker
+
+django-mdeditor
+Markdown

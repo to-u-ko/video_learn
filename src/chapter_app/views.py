@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .forms import SignupForm, LoginForm, UploadForm, EditForm
+from .forms import SignupForm, LoginForm, UploadForm, EditForm, SummaryForm
 from django.contrib.auth import login, logout
 from .create_chapter import celery_process
 from django.conf import settings
@@ -110,7 +110,7 @@ def main_view(request):
 
 
 @login_required
-def edit_view(request, pk):
+def chapter_edit_view(request, pk):
     chapter = get_object_or_404(Chapter, pk=pk)
     
     if request.method == 'POST':
@@ -124,7 +124,7 @@ def edit_view(request, pk):
 
     params = {'form': form, 'chapter': chapter, 'chapter_lines': chapter_lines}
 
-    return render(request, 'edit.html', params)
+    return render(request, 'chapter_edit.html', params)
 
 @login_required
 def download_transcripion_view(request, pk):
@@ -143,3 +143,19 @@ def download_transcripion_view(request, pk):
 
     # ユーザーをプリサインされたURLにリダイレクト
     return HttpResponseRedirect(presigned_url)
+
+@login_required
+def summary_edit_view(request, pk):
+    chapter = get_object_or_404(Chapter, pk=pk)
+    
+    if request.method == 'POST':
+        form = SummaryForm(request.POST, instance=chapter)
+        if form.is_valid():
+            form.save()
+            return redirect('summary_edit', pk)
+    else:
+        form = SummaryForm(instance=chapter)
+
+    params = {'form': form, 'chapter': chapter}
+
+    return render(request, 'summary_edit.html', params)
