@@ -30,20 +30,16 @@ class Chapter(models.Model):
     status       = models.CharField(max_length=50, default='処理順番待ち')
     video_path   = models.FileField(upload_to=video_directory_path)
     transcription_path = models.CharField(max_length=256, null=True)
-    summary_text = MDTextField()
+
 
     def __str__(self):
         return self.video_title
 
 
-"""
 class Summary(models.Model):
+    chapter      = models.ForeignKey(Chapter, on_delete=models.CASCADE, primary_key=True)
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
     summary_text = MDTextField()
-"""
-
-    
-
     
 
