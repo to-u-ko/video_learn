@@ -96,18 +96,26 @@ def upload_view(request):
 
 @login_required
 def main_view(request):
-    users = User.objects.exclude(username=request.user.username)
+    user = request.user
 
     #chapterモデルからvideo_titleのリストを取得
     chapter_list = Chapter.objects.all()[::-1]
 
     params = {
-        'users' : users,
+        'user' : user,
         'chapter_list': chapter_list,
     }
 
     return render(request, 'main.html', params)
 
+
+@login_required
+def video_view(request, pk):
+    chapter = get_object_or_404(Chapter, pk=pk)
+    chapter_lines = chapter.chapter_data.splitlines()
+    params = {'chapter': chapter, 'chapter_lines': chapter_lines}
+
+    return render(request, 'video.html', params)
 
 @login_required
 def chapter_edit_view(request, pk):
@@ -143,6 +151,15 @@ def download_transcripion_view(request, pk):
 
     # ユーザーをプリサインされたURLにリダイレクト
     return HttpResponseRedirect(presigned_url)
+
+@login_required
+def summary_view(request, pk):
+    chapter = get_object_or_404(Chapter, pk=pk)
+    summary = get_object_or_404(Summary, chapter=chapter)
+
+    params = {'chapter': chapter, 'summary': summary}
+
+    return render(request, 'summary.html', params)
 
 @login_required
 def summary_edit_view(request, pk):
