@@ -1,20 +1,10 @@
-<!-- ベース読み込み -->
 {% extends 'base-top.html' %} {% load static %}
 
-<head>
-  <!-- title挿入 -->
-  {% block title %}ログアウト{% endblock %}
-</head>
+{% block title %}ログアウト{% endblock %}
 
-<body>
-  <!-- header挿入 -->
-  {% block header %} {% endblock header %}
-
-  <!-- main挿入 -->
-  {% block main %}
+{% block main %}
   <div class="main-container">
     <h2>ログアウトしました...</h2>
     <p><a href="{% url 'login'%}">ログイン</a></p>
   </div>
-  {% endblock main %}
-</body>
+{% endblock main %}

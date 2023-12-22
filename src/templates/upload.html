@@ -1,14 +1,8 @@
-<!-- ベース読み込み -->
 {% extends 'base.html' %} {% load static %}
 
-<head>
-  <!-- title挿入 -->
 {% block title %}動画アップロード{% endblock %}
-</head>
 
-<body>
-  <!-- header挿入 -->
-  {% block header %}
+{% block main %}
   <style>
     /* 動画アップロードボタンの拡大表示・ドラッグアンドドロップに関するCSS */
         #id_video_file {
@@ -105,11 +99,7 @@
           display: none;
         }
   </style>
-  
-  {% endblock header %}
 
-  <!-- main挿入 -->
-  {% block main %}
   <div class="main-container">
     <h2>動画アップロード</h2>
     <p>{{user.username}}さん、ようこそ</p>
@@ -250,5 +240,4 @@
       }});
     </script>
   </div>
-  {% endblock main %}
-</body>
+{% endblock main %}

@@ -1,17 +1,8 @@
-<!-- ベース読み込み -->
 {% extends 'base.html' %} {% load static %}
 
-<head>
-  <!-- title挿入 -->
-  {% block title %}アカウント管理{% endblock %}
-</head>
+{% block title %}アカウント管理{% endblock %}
 
-<body>
-  <!-- header挿入 -->
-  {% block header %} {% endblock header %}
-
-  <!-- main挿入 -->
-  {% block main %}
+{% block main %}
   <div class="main-container">
     <h2>あなたの情報</h2>
     <h2>{{user.username}}</h2>
@@ -21,5 +12,4 @@
     <p><a href="/admin/" class="admin">管理者用ページ</a></p>
     
   </div>
-  {% endblock main %}
-</body>
+{% endblock main %}

@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
-  {% block title %}編集ページ{% endblock %}
+{% block title %}チャプター編集{% endblock %}
 
-  {% block main %}
+{% block main %}
   <style>
     main {
       grid-row: 2 / 3;
@@ -51,7 +51,7 @@
 
   <aside>
     <li>
-      <a href="{% url 'summary_edit' chapter.id %}">要約編集</a>
+      <a href="{% url 'summary' chapter.id %}">要約</a>
     </li>
     {% if chapter.transcription_path %}
     <li>
@@ -60,7 +60,7 @@
     {% endif %}
   </aside>
 
-  {% if chapter.video_path != null %}
+  <!-- {% if chapter.video_path != null %} -->
   <!-- <div class="video-and-chapters-container"> -->
     <!-- <div class="video-wrapper"> -->
       <!-- <video -->
@@ -129,5 +129,4 @@
     </form>
   
 
-  {% endblock %}
-</body>
+{% endblock %}

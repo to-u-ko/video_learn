@@ -1,18 +1,16 @@
-<!-- ベース読み込み -->
 {% extends 'base.html' %} {% load static %}
 {% load markdown_extras %}
 
-  <!-- title挿入 -->
 {% block title %}要約記事{% endblock %}
+
 {% block meta %} 
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 {% endblock meta %}
 
-<body>
-  {% block main %}
+{% block main %}
   <aside>
     <li>
-      <a href="{% url 'summary' chapter.id %}">要約</a>
+      <a href="{% url 'video' chapter.id %}">動画閲覧</a>
     </li>
     {% if chapter.transcription_path %}
     <li>
@@ -21,6 +19,13 @@
     {% endif %}
   </aside>
   
-  {{ summary.summary_text | markdown | safe }}
-  
-  {% endblock main %}
+  <div>
+    {{ summary.summary_text | markdown | safe }}
+  </div>
+  {% if user == chapter.user %}
+  <div>
+      <a href="{% url 'summary_edit' chapter.id %}">編集</a>
+  </div>
+  {% endif %}
+
+{% endblock main %}

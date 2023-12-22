@@ -1,11 +1,12 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from mdeditor.fields import MDTextField
 
 
 #ユーザーテーブルを定義
 class User(AbstractUser):
     email = models.EmailField(max_length=100, unique=True)
+    group = models.ForeignKey(Group, on_delete=models.PROTECT, default=2, related_name='users')
 
     def __str__(self):
         return self.username
