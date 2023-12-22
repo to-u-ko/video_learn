@@ -1,37 +1,35 @@
-<!-- ベース読み込み -->
 {% extends 'base.html' %} {% load static %}
 
-  <!-- title挿入 -->
-{% block title %}要約記事{% endblock %}
+{% block title %}要約編集{% endblock %}
 {% block meta %} 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 {% endblock meta %}
 
 {% block main %}
-<style>
-  main {
-grid-row: 2 / 3;
-grid-column: 2 / 4;
-padding: 50px;
-}
-</style>
+  <style>
+    main {
+  grid-row: 2 / 3;
+  grid-column: 2 / 4;
+  padding: 50px;
+  }
+  </style>
 
-<aside>
-  <li>
-    <a href="{% url 'chapter_edit' chapter.id %}">チャプター編集</a>
-  </li>
-  {% if chapter.transcription_path %}
-  <li>
-    <a href="{% url 'download_transcription' chapter.id %}">文字起こしダウンロード</a>
-  </li>
-  {% endif %}
-</aside>
+  <aside>
+    <li>
+      <a href="{% url 'chapter_edit' chapter.id %}">動画閲覧</a>
+    </li>
+    {% if chapter.transcription_path %}
+    <li>
+      <a href="{% url 'download_transcription' chapter.id %}">文字起こしダウンロード</a>
+    </li>
+    {% endif %}
+  </aside>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.media }}
-  {{ form.as_p }}
-  <button>保存</button>
-</form>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.media }}
+    {{ form.as_p }}
+    <button>保存</button>
+  </form>
 
 {% endblock main %}

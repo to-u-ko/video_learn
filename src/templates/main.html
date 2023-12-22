@@ -1,16 +1,12 @@
-<!-- ベース読み込み -->
 {% extends 'base.html' %} {% load static %}
 
-<head>
-  <!-- title挿入 -->
-  {% block title %}チャプター一覧{% endblock title %} {% block meta %}
-  <meta http-equiv="refresh" content="30; URL=" />
-  {% endblock meta %}
-</head>
+{% block title %}チャプター一覧{% endblock title %} 
 
-<body>
-  <!-- header挿入 -->
-  {% block header %}
+{% block meta %}
+  <meta http-equiv="refresh" content="30; URL=" />
+{% endblock meta %}
+
+{% block main %}
   <style>
     main {
       grid-row: 2 / 3;
@@ -21,10 +17,7 @@
       font-size: 80%;
     }
   </style>
-  {% endblock header %}
 
-  <!-- main挿入 -->
-  {% block main %}
   <div class="main-container">
     <h2>チャプター一覧</h2>
     <input
@@ -74,5 +67,4 @@
         }
       });
   </script>
-  {% endblock main %}
-</body>
+{% endblock main %}

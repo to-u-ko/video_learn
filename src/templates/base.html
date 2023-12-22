@@ -19,9 +19,11 @@
         <li>
           <a href="{% url 'logout'%}">ログアウト</a>
         </li>
+        {% if user.group == 1 %}
         <li>
           <a href="{% url 'upload'%}">動画アップロード</a>
         </li>
+        {% endif %}
         <li>
           <a href="{% url 'main'%}">チャプター一覧</a>
         </li>

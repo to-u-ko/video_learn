@@ -4,6 +4,8 @@ from django.contrib.auth import login, logout
 from .create_chapter import celery_process
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
+from django.contrib import messages
+
 
 # デフォルトのUserモデルを外す
 # from django.contrib.auth.models import User
@@ -115,24 +117,29 @@ def video_view(request, pk):
     chapter_lines = chapter.chapter_data.splitlines()
     params = {'chapter': chapter, 'chapter_lines': chapter_lines}
 
-    return render(request, 'video.html', params)
+    return render(request, 'video.html', params) 
 
 @login_required
 def chapter_edit_view(request, pk):
     chapter = get_object_or_404(Chapter, pk=pk)
-    
-    if request.method == 'POST':
-        form = EditForm(request.POST, instance=chapter)
-        if form.is_valid():
-            form.save()
-            return redirect('edit', pk)
+    summary = get_object_or_404(Summary, chapter=chapter)
+    if request.user == chapter.user:
+        if request.method == 'POST':
+            form = EditForm(request.POST, instance=chapter)
+            if form.is_valid():
+                form.save()
+                return redirect('chapter_edit', pk)
+        else:
+            form = EditForm(instance=chapter)
+            chapter_lines = chapter.chapter_data.splitlines()
+
+        params = {'form': form, 'chapter': chapter, 'chapter_lines': chapter_lines}
+
+        return render(request, 'chapter_edit.html', params)
     else:
-        form = EditForm(instance=chapter)
-        chapter_lines = chapter.chapter_data.splitlines()
-
-    params = {'form': form, 'chapter': chapter, 'chapter_lines': chapter_lines}
-
-    return render(request, 'chapter_edit.html', params)
+        messages.error(request, '自分でアップロードした動画のみ編集可能です')
+        return redirect('videl', pk)
+        
 
 @login_required
 def download_transcripion_view(request, pk):
@@ -154,10 +161,11 @@ def download_transcripion_view(request, pk):
 
 @login_required
 def summary_view(request, pk):
+    user = request.user
     chapter = get_object_or_404(Chapter, pk=pk)
     summary = get_object_or_404(Summary, chapter=chapter)
 
-    params = {'chapter': chapter, 'summary': summary}
+    params = {'user': user, 'chapter': chapter, 'summary': summary}
 
     return render(request, 'summary.html', params)
 
@@ -165,15 +173,19 @@ def summary_view(request, pk):
 def summary_edit_view(request, pk):
     chapter = get_object_or_404(Chapter, pk=pk)
     summary = get_object_or_404(Summary, chapter=chapter)
-    
-    if request.method == 'POST':
-        form = SummaryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('summary_edit', pk)
+    if request.user == chapter.user:
+        if request.method == 'POST':
+            form = SummaryForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('summary_edit', pk)
+        else:
+            form = SummaryForm(instance=summary)
+
+        params = {'form': form, 'chapter': chapter, 'summary': summary}
+
+        return render(request, 'summary_edit.html', params)
+
     else:
-        form = SummaryForm(instance=summary)
-
-    params = {'form': form, 'chapter': chapter, 'summary': summary}
-
-    return render(request, 'summary_edit.html', params)
+        messages.error(request, '自分でアップロードした動画のみ編集可能です')
+        return redirect('summary', pk)
