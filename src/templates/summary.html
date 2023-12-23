@@ -5,6 +5,8 @@
 
 {% block meta %} 
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="{% static 'mdeditor/css/editormd.min.css' %}" rel="stylesheet">
+  <link href="{% static 'mdeditor/css/editormd.preview.css' %}" rel="stylesheet">
 {% endblock meta %}
 
 {% block main %}
@@ -27,5 +29,29 @@
       <a href="{% url 'summary_edit' chapter.id %}">編集</a>
   </div>
   {% endif %}
+
+  <script src="{% static 'mdeditor/js/jquery.min.js' %}"></script>
+  <script src="{% static 'mdeditor/js/editormd.min.js' %}"></script>
+  <script src="{% static 'mdeditor/js/lib/marked.min.js' %}"></script>
+  <script src="{% static 'mdeditor/js/lib/prettify.min.js' %}"></script>
+  <script src="{% static 'mdeditor/js/lib/raphael.min.js' %}"></script>
+  <script src="{% static 'mdeditor/js/lib/underscore.min.js' %}"></script>
+  <script src="{% static 'mdeditor/js/lib/sequence-diagram.min.js' %}"></script>
+  <script src="{% static 'mdeditor/js/lib/flowchart.min.js' %}"></script>
+  <script src="{% static 'mdeditor/js/lib/jquery.flowchart.min.js' %}"></script>
+  <script>
+    $(function () {
+        editormd.markdownToHTML("content", {
+            emoji           : true,
+            taskList        : true,
+            tex             : true, 
+            flowChart       : true,
+            sequenceDiagram : true,
+        });
+        $(".reference-link").each(function (i,obj) {
+          console.log(obj)
+        })
+    })
+  </script>
 
 {% endblock main %}
