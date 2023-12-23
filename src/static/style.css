@@ -18,6 +18,11 @@ header {
   background-color: #948080;
 }
 
+message {
+  grid-column: 1 / 6;
+  background-color: #948080;
+}
+
 .navbar {
   color: #fbf3e4;
   text-align: center;

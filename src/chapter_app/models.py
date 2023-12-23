@@ -40,6 +40,6 @@ class Summary(models.Model):
     chapter      = models.ForeignKey(Chapter, on_delete=models.CASCADE, primary_key=True)
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
-    summary_text = MDTextField()
+    summary_text = MDTextField(default='## 要約生成中')
     
 

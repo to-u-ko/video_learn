@@ -34,6 +34,13 @@
     </header>
 
     <!-- main -->
-    <main>{% block main %} {% endblock main %}</main>
+    <main>
+      {% if messages %}
+        {% for message in messages %}
+          <p class="message">{{ message }}</p>
+        {% endfor %}
+      {% endif %}
+      {% block main %} {% endblock main %}
+    </main>
   </body>
 </html>
