@@ -25,6 +25,6 @@ urlpatterns = [
     path('', include('chapter_app.urls'))
 ]
 
-#動画読み込み用URL設定
+# メディアファイル読み込み用URL設定
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

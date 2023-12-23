@@ -29,14 +29,20 @@
     <table id="Table" border="1" width="75%" bgcolor="white">
       <tr height="50">
         <th width="60%">タイトル</th>
-        <th width="20%" class="thsize">更新日時</th>
+        <th width="20%" class="thsize">投稿者</th>
+        <th width="20%" class="thsize">投稿日時</th>
+        {% if user.is_staff %}
         <th width="20%" class="thsize">ステータス</th>
+        {% endif %}
       </tr>
       {% for item in chapter_list %}
       <tr height="40">
         <td><a href="{% url 'video' item.id %}">{{ item.video_title }}</a></td>
-        <td align="center" class="thsize">{{ item.updated_at }}</td>
+        <td align="center" class="thsize">{{ item.user.username }}</td>
+        <td align="center" class="thsize">{{ item.created_at }}</td>
+        {% if user.is_staff %}
         <td align="center" class="thsize">{{ item.status }}</td>
+        {% endif %}
       </tr>
       {% empty %}
       <tr height="40">

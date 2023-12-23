@@ -19,7 +19,7 @@
         <li>
           <a href="{% url 'logout'%}">ログアウト</a>
         </li>
-        {% if user.group == 1 %}
+        {% if user.is_staff %}
         <li>
           <a href="{% url 'upload'%}">動画アップロード</a>
         </li>

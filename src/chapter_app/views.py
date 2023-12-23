@@ -99,16 +99,21 @@ def upload_view(request):
 @login_required
 def main_view(request):
     user = request.user
+    # ユーザーがteacherの場合は全動画
+    if user.is_staff:
+        chapter_list = Chapter.objects.all()[::-1]
 
-    #chapterモデルからvideo_titleのリストを取得
-    chapter_list = Chapter.objects.all()[::-1]
-
+    # ユーザーがstudentの場合はステータスが完了の動画のみ
+    else:
+        chapter_list = Chapter.objects.all().filter(status='完了')[::-1] #[::-1]はpythonのスライス構文。リストを逆順にする。つまり最新のアップロードが最初に来るようになる
+    
     params = {
         'user' : user,
         'chapter_list': chapter_list,
     }
 
     return render(request, 'main.html', params)
+
 
 
 @login_required
