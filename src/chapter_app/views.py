@@ -77,23 +77,32 @@ def user_view(request):
 
 @login_required
 def upload_view(request):
-    if request.method == 'POST':
-        form = UploadForm(request.POST, request.FILES)
-        if form.is_valid():        
-            chapter = form.save()
-            chapter.user = request.user
-            chapter.save()
-            print('動画アップロード完了')
-            user_id = request.user.id
-            celery_process.delay(user_id, chapter.id)
+    user = request.user
+    if user.is_staff:
+        if request.method == 'POST':
+            form = UploadForm(request.POST, request.FILES)
+            if form.is_valid():        
+                chapter = form.save()
+                chapter.user = request.user
+                chapter.save()
+                Summary.objects.create(chapter=chapter)
+                print('動画アップロード完了')
+                user_id = request.user.id
+                celery_process.delay(user_id, chapter.id)
 
-            return redirect('main')
+                return redirect('main')
 
+        else:
+            form = UploadForm()
+
+        params = {'form': form}
+        return render(request, 'upload.html', params)
+    
     else:
-        form = UploadForm()
+        messages.error(request, '講師のみ動画のアップロードが可能です')
+        return redirect('main')
+        
 
-    params = {'form': form}
-    return render(request, 'upload.html', params)
 
 
 @login_required
@@ -143,7 +152,7 @@ def chapter_edit_view(request, pk):
         return render(request, 'chapter_edit.html', params)
     else:
         messages.error(request, '自分でアップロードした動画のみ編集可能です')
-        return redirect('videl', pk)
+        return redirect('video', pk)
         
 
 @login_required
