@@ -8,29 +8,31 @@
 
 {% block main %}
   <style>
-    main {
-  grid-row: 2 / 3;
-  grid-column: 2 / 4;
-  padding: 50px;
-  }
+      .edit-wrapper {
+        margin-top: 20px;
+        padding:0 30px;
+        grid-column: 1 / 4;
+        height: 100%;
+        margin-top: 30px;
+      }
+
   </style>
-
-  <aside>
-    <li>
-      <a href="{% url 'video' chapter.id %}">動画閲覧</a>
-    </li>
+  <div class="title-menu-wrapper">
+    <h1 class="video-title">{{ chapter.video_title }}</h1>
+    <a href="{% url 'summary' chapter.id %}" class="menu-button">要約閲覧</a>
+    <a href="{% url 'video' chapter.id %}" class="menu-button">動画閲覧</a>
     {% if chapter.transcription_path %}
-    <li>
-      <a href="{% url 'download_transcription' chapter.id %}">文字起こしダウンロード</a>
-    </li>
+      <a href="{% url 'download_transcription' chapter.id %}" class="menu-button">文字起こしダウンロード</a>
     {% endif %}
-  </aside>
+  </div>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.media }}
-    {{ form.as_p }}
-    <button>保存</button>
-  </form>
+  <div class="edit-wrapper">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.media }}
+      {{ form.summary_text }}
+      <button type="submit" class="submit-button">保存</button>
+    </form>
+  </div>
 
 {% endblock main %}

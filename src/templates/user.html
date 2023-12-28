@@ -4,12 +4,9 @@
 
 {% block main %}
   <div class="main-container">
-    <h2>あなたの情報</h2>
-    <h2>{{user.username}}</h2>
-    <p>連絡先：{{user.email}}</p>
-    <p>アカウント作成日：{{user.date_joined}}</p>
-
-    <p><a href="/admin/" class="admin">管理者用ページ</a></p>
-    
+    <h1>{{user.username}}</h3>
+    <h3>連絡先：{{user.email}}</h3>
+    <h3>アカウント作成日：{{user.date_joined}}</h3>
+    <h3><a href="/admin/" class="admin">管理者用ページ</a></h3>    
   </div>
 {% endblock main %}

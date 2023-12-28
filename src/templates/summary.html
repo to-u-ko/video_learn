@@ -9,26 +9,46 @@
   <link href="{% static 'mdeditor/css/editormd.preview.css' %}" rel="stylesheet">
 {% endblock meta %}
 
-{% block main %}
-  <aside>
-    <li>
-      <a href="{% url 'video' chapter.id %}">動画閲覧</a>
-    </li>
+{% block main %}  
+  <style>
+    main {
+      grid-template-columns: 1fr minmax(350px, 800px) 1fr;
+    }
+
+    .title-menu-wrapper {
+      grid-column: 1 / 4;
+      justify-content: center;
+    }
+
+   .summary-wrapper {
+      grid-row: 2 / 3;
+      grid-column: 2 / 3;
+      padding: 10px;
+      margin-top: 30px;
+    }
+
+    .editormd-preview-container, .editormd-html-preview {
+      width: auto;
+      margin: 10px
+    }
+  </style>
+
+  <div class="title-menu-wrapper">
+    <h1 class="video-title">{{ chapter.video_title }}</h1>
+    {% if user == chapter.user %}
+      <a href="{% url 'summary_edit' chapter.id %}" class="menu-button">要約編集</a>
+    {% endif %} 
+    <a href="{% url 'video' chapter.id %}" class="menu-button">動画閲覧</a>
     {% if chapter.transcription_path %}
-    <li>
-      <a href="{% url 'download_transcription' chapter.id %}">文字起こしダウンロード</a>
-    </li>
+      <a href="{% url 'download_transcription' chapter.id %}" class="menu-button">文字起こしダウンロード</a>
     {% endif %}
-  </aside>
-  
-  <div>
-    {{ summary.summary_text | markdown | safe }}
   </div>
-  {% if user == chapter.user %}
-  <div>
-      <a href="{% url 'summary_edit' chapter.id %}">編集</a>
+
+  <div class="summary-wrapper">
+    <div class="card-text pl-0 pr-0" id="content">
+      {{ summary.summary_text | markdown | safe }}
+    </div>
   </div>
-  {% endif %}
 
   <script src="{% static 'mdeditor/js/jquery.min.js' %}"></script>
   <script src="{% static 'mdeditor/js/editormd.min.js' %}"></script>

@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .forms import SignupForm, LoginForm, UploadForm, EditForm, SummaryForm
+from .forms import SignupForm, LoginForm, UploadForm, ChapterForm, SummaryForm
 from django.contrib.auth import login, logout
 from .create_chapter import celery_process
 from django.conf import settings
@@ -139,12 +139,12 @@ def chapter_edit_view(request, pk):
     summary = get_object_or_404(Summary, chapter=chapter)
     if request.user == chapter.user:
         if request.method == 'POST':
-            form = EditForm(request.POST, instance=chapter)
+            form = ChapterForm(request.POST, instance=chapter)
             if form.is_valid():
                 form.save()
                 return redirect('chapter_edit', pk)
         else:
-            form = EditForm(instance=chapter)
+            form = ChapterForm(instance=chapter)
             chapter_lines = chapter.chapter_data.splitlines()
 
         params = {'form': form, 'chapter': chapter, 'chapter_lines': chapter_lines}
@@ -189,9 +189,11 @@ def summary_edit_view(request, pk):
     summary = get_object_or_404(Summary, chapter=chapter)
     if request.user == chapter.user:
         if request.method == 'POST':
-            form = SummaryForm(request.POST)
+            form = SummaryForm(request.POST, instance=summary)
             if form.is_valid():
-                form.save()
+                form.save(commit=False)
+                summary.chapter = chapter 
+                summary.save()
                 return redirect('summary_edit', pk)
         else:
             form = SummaryForm(instance=summary)

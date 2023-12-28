@@ -1,3 +1,4 @@
+/* 共通 */
 * {
   padding: 0;
   margin: 0;
@@ -6,10 +7,10 @@
 body {
   height: 100svh;
   display: grid;
-  grid-template-columns: 0.1fr 2fr minmax(350px, 450px) 2fr 0.1fr;
-  grid-template-rows: 30px 8fr 0.5fr;
+  grid-template-rows: 50px 40px 8fr 0.5fr;
+  grid-template-columns: 0.5fr 2fr minmax(350px, 450px) 2fr 0.5fr;
   font-family: Arial, sans-serif;
-  background-color: #fbf3e4;
+  background-color: #fff;
 }
 
 header {
@@ -18,50 +19,115 @@ header {
   background-color: #948080;
 }
 
-message {
-  grid-column: 1 / 6;
-  background-color: #948080;
-}
-
 .navbar {
   color: #fbf3e4;
+  height: 100%;
+  width: auto;
   text-align: center;
-}
-
-.navbar li {
-  height: 30px;
-  display: inline-grid;
-  align-content: center;
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0 20px
 }
 
 .navbar li a {
-  padding: 1.2em;
   text-decoration: none;
   color: #f4f4f4;
 }
+
+.message {
+  grid-row: 2 / 3;
+  grid-column: 1 / 6;
+  margin-top :0;
+  background-color: yellow;
+  font-weight:bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+main {
+  grid-row: 3 / 4;
+  grid-column: 2 / 5;
+  display:grid;
+  grid-template-rows: 70px auto 50px;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.main-container {
+  grid-row: 2 / 3;
+  grid-column: 2 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 3em;
+}
+
+/* 動画閲覧関係 */
+.title-menu-wrapper {
+  grid-row: 1 / 2;
+  grid-column: 1 / 4;
+  display: flex;
+  gap:0 10px;
+  gap:0 10px;
+  margin-bottom: 20px;
+}
+
+.video-title {
+  display: block;
+  width:auto;
+}
+
+.menu-button {
+  display: block;
+  width: auto;
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 0.7rem 2rem;
+  font-weight: bold;
+  border: 2px solid rgb(255, 136, 0);
+  background: rgb(255, 136, 0);
+  color: #fff;
+  border-radius: 10px;
+  transition: 0.5s;
+}
+
+.menu-button:hover  {
+  color: orange;
+  background: #fff;
+  border: 2px solid rgb(255, 136, 0);
+}
+
+.submit-button {
+  display: block;
+  float: right;
+  width: auto;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-decoration: none;
+  padding: 0.7rem 2rem;
+  margin-top: 10px;
+  font-weight: bold;
+  border: 2px solid rgb(255, 136, 0);
+  background: rgb(255, 136, 0);
+  color: #fff;
+  border-radius: 10px;
+  transition: 0.5s;
+  cursor: pointer;
+}
+
+.submit-button:hover{
+  color: orange;
+  background: #fff;
+  border: 2px solid rgb(255, 136, 0);
+}
+
 
 table tr td a {
   text-decoration: none;
 }
 
-main {
-  grid-row: 2 / 3;
-  grid-column: 3 / 4;
-  padding: 50px;
-}
-
-.main-container {
-  display: grid;
-  justify-items: center;
-}
-
-h1,
-h2 {
-  display: grid;
-  margin-bottom: 20px;
-  justify-content: center;
-  user-select: none;
-}
 
 p {
   user-select: none;
@@ -71,59 +137,16 @@ p {
   color: #f64d4d;
 }
 
-input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
+
+input {
+  width:100%;
+  height:auto;
+  padding:10px;
+  font-size: 1.2em;
+  border: 1.5px solid rgb(7, 7, 7);
+  border-radius: 10px;
 }
 
-input[type="password"] {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-}
-
-button {
-  background-color: #f69f4d;
-  padding: 10px 20px;
-  border: none;
-  width: 100%;
-}
-
-.login-button {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  justify-items: end;
-}
-
-.circleButton {
-  grid-column: 2/3;
-  color: black;
-  font-weight: bold;
-  display: grid;
-  justify-content: center;
-  align-content: center;
-  background-color: #f69f4d;
-  border-radius: 50%;
-  width: 100px;
-  height: 100px;
-  cursor: pointer;
-  text-decoration: none;
-  margin: auto;
-}
-
-.circleButton:active {
-  position: relative;
-  top: 5px;
-}
-
-.chara_icon {
-  grid-column: 3/4;
-  width: 90px;
-  user-select: none;
-}
 
 .signup {
   display: block;
@@ -131,8 +154,9 @@ button {
   text-decoration: none;
 }
 
+
 .admin {
-  margin-top: 50%;
+  margin-top: 20px;
   display: block;
   text-align: center;
   text-decoration: none;
