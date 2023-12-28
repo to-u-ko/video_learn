@@ -4,89 +4,88 @@
 
 {% block main %}
   <style>
-    main {
+   .video-wrapper {
       grid-row: 2 / 3;
-      grid-column: 1 / 6;
-      padding: 50px;
+      grid-column: 1 / 3;
+      margin-top: 30px;
     }
 
-    aside {
-      grid-column: 4 / 5;
-
+    video {
+      width: 100%; 
+      height: auto;
     }
-
-    .video-and-chapters-container {
-      grid-column: 2 / 5;
-      display: grid;
-      grid-template-columns: 1fr 2fr 2fr 1fr;
+    
+    .video-info {
+      margin-top: 1rem;
+      font-weight: bold;
     }
-
-    .video-wrapper {
-      grid-column: 2 / 3;
-    }
-
-    .chapters-wrapper {
+  
+    .chapter-wrapper {
+      grid-row: 2 / 3;
       grid-column: 3 / 4;
-      padding-left: 70px;
+      margin-top: 30px;
+      margin-left: 30px;
+    }
+
+    .chapter_top {
+      display: flex;
+      gap:0 10px;
+      justify-content: space-between;
+    }
+
+    h2 {
+      margin:0.2rem;
     }
 
     .chapter-text {
       overflow: auto;
       width: 100%;
-      height:250px;
-    }
-
-    .form-wrapper {
-      width: 50%;
-      margin-top: 20px;
-      margin-left: auto;
-      margin-right: auto;
+      line-height: 2em;
     }
 
     #id_chapter_data {
       resize: none;
       width: 100%;
     }
+
   </style>
 
-  <aside>
-    <li>
-      <a href="{% url 'summary' chapter.id %}">要約</a>
-    </li>
-    {% if chapter.transcription_path %}
-    <li>
-      <a href="{% url 'download_transcription' chapter.id %}">文字起こしダウンロード</a>
-    </li>
-    {% endif %}
-  </aside>
-
-  <!-- {% if chapter.video_path != null %} -->
-  <!-- <div class="video-and-chapters-container"> -->
-    <!-- <div class="video-wrapper"> -->
-      <!-- <video -->
-        <!-- controls -->
-        <!-- preload="auto" -->
-        <!-- playsinline -->
-        <!-- src="{{ chapter.video_path.url }}" -->
-        <!-- style="width: 100%; height: auto" -->
-        <!-- id="videoPlayer" -->
-      <!-- ></video> -->
-    <!-- </div> -->
-
-    <div class="chapters-wrapper">
-      <h3>タイトル：{{ chapter.video_title }}</h3>
-      <div class="chapter-text">
-        {% for line in chapter_lines %}
-          <p><a href="#" class="chapter-link">{{ line }}</a></p>
-        {% endfor %}
-      </div>
-    </div>
-
+  <div class="title-menu-wrapper">
+    <h1 class="video-title">{{ chapter.video_title }}</h1>
     {% if user == chapter.user %}
-    <div>
-        <a href="{% url 'chapter_edit' chapter.id %}">編集</a>
-    </div>
+      <a href="{% url 'chapter_edit' chapter.id %}" class="menu-button">チャプター編集</a>
     {% endif %}
+    <a href="{% url 'summary' chapter.id %}" class="menu-button">要約閲覧</a>
+    {% if chapter.transcription_path %}
+      <a href="{% url 'download_transcription' chapter.id %}" class="menu-button">文字起こしダウンロード</a>
+    {% endif %}
+  </div>
+
+  <div class="video-wrapper">
+    <video
+      controls
+      preload="auto"
+      playsinline
+      src="まｋど"
+      id="videoPlayer"
+      poster="../sum1.jpg"
+    >動画は再生できません。</video>
+    <div class="video-info">
+      <p>投稿日時：{{ chapter.created_at }}</p>
+      <p>投稿者：{{ chapter.user.username }}</p>
+    </div>
+  </div>
+
+  <div class="chapter-wrapper">
+    <div class="chapter_top">
+      <h2>チャプター</h2>    
+    </div>
+    <div class="chapter-text">
+      {% for line in chapter_lines %}
+        <p><a href="#" class="chapter-link">{{ line }}</a></p>
+      {% endfor %}
+    </div>
+  </div>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -116,20 +115,4 @@
         video.play();
       }
     </script>
-  </div>
-  {% endif %}
-  <div class="form-wrapper">
-    <form method="POST">
-      {% csrf_token %} {% for field in form %}
-      <div class="fieldWrapper">
-        {{ field.errors }} {{ field.label_tag }} {{ field }}
-      </div>
-
-      {% endfor %}
-
-      <p><strong>作成日時:</strong> {{ chapter.created_at }}</p>
-      <p><strong>更新日時:</strong> {{ chapter.updated_at }}</p>
-      <p><strong>作成者:</strong> {{ chapter.user.username }}</p>
-    </form>
-  
 {% endblock %}

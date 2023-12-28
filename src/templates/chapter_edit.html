@@ -4,83 +4,111 @@
 
 {% block main %}
   <style>
-    main {
-      grid-row: 2 / 3;
-      grid-column: 1 / 6;
-      padding: 50px;
-    }
-
-    aside {
-      grid-column: 4 / 5;
-
-    }
-
-    .video-and-chapters-container {
-      grid-column: 2 / 5;
-      display: grid;
-      grid-template-columns: 1fr 2fr 2fr 1fr;
-    }
-
     .video-wrapper {
-      grid-column: 2 / 3;
+      grid-row: 2 / 3;
+      grid-column: 1 / 2;
+      margin-top: 30px;
     }
 
-    .chapters-wrapper {
-      grid-column: 3 / 4;
-      padding-left: 70px;
+    video {
+      width: 100%; 
+      height: auto;
+    }
+
+    .video-info {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    .chapter-wrapper {
+      grid-column: 2 / 3;
+      height:100%;
+      margin-top: 30px;
+      margin-left: 30px;
     }
 
     .chapter-text {
       overflow: auto;
       width: 100%;
-      height:250px;
+      height:100%;
+      line-height: 1.8em;
     }
 
     .form-wrapper {
-      width: 50%;
-      margin-top: 20px;
-      margin-left: auto;
-      margin-right: auto;
+      grid-column: 3 / 4;
+      height:100%;  
+      margin-top: 30px;
+      margin-left: 30px;  
+    }
+
+    form {
+      width:100%;
+      height: 100%;
+    }
+
+    #id_video_title {
+      padding: 0.3em;
+      font-size:2em;
+      margin-bottom: 10px;
     }
 
     #id_chapter_data {
+      border-radius: 10px;
+      padding: 0.5em;
+      line-height: 1.8em;
+      font-size:1.2em;
       resize: none;
       width: 100%;
+      height:90%;
     }
   </style>
 
-  <aside>
-    <li>
-      <a href="{% url 'summary' chapter.id %}">要約</a>
-    </li>
+  <div class="title-menu-wrapper">
+    <h1 class="video-title">{{ chapter.video_title }}</h1>
+    <a href="{% url 'video' chapter.id %}" class="menu-button">動画閲覧</a>
+    <a href="{% url 'summary' chapter.id %}" class="menu-button">要約</a>
     {% if chapter.transcription_path %}
-    <li>
-      <a href="{% url 'download_transcription' chapter.id %}">文字起こしダウンロード</a>
-    </li>
+      <a href="{% url 'download_transcription' chapter.id %}" class="menu-button">文字起こしダウンロード</a>
     {% endif %}
-  </aside>
+  </div>
 
-  <!-- {% if chapter.video_path != null %} -->
-  <!-- <div class="video-and-chapters-container"> -->
-    <!-- <div class="video-wrapper"> -->
-      <!-- <video -->
-        <!-- controls -->
-        <!-- preload="auto" -->
-        <!-- playsinline -->
-        <!-- src="{{ chapter.video_path.url }}" -->
-        <!-- style="width: 100%; height: auto" -->
-        <!-- id="videoPlayer" -->
-      <!-- ></video> -->
-    <!-- </div> -->
+  <div class="video-wrapper">
+    <video
+      controls
+      preload="auto"
+      playsinline
+      src="うんこ{{ chapter.video_path.url }}"
+      id="videoPlayer"
+      poster="../sum1.jpg"
+    >動画は再生できません。</video>
+    <div class="video-info">
+      <p>動画投稿日時：{{ chapter.created_at }}</p>
+      <p>投稿者：{{ chapter.user.username }}</p>
+    </div>
+  </div>
 
-    <div class="chapters-wrapper">
-      <h3>タイトル：{{ chapter.video_title }}</h3>
+    <div class="chapter-wrapper">
       <div class="chapter-text">
         {% for line in chapter_lines %}
           <p><a href="#" class="chapter-link">{{ line }}</a></p>
         {% endfor %}
       </div>
     </div>
+
+    <div class="form-wrapper">
+      <form method="POST">
+        {% csrf_token %} 
+        {% for field in form %}
+        <div class="fieldWrapper">
+          {{ field.errors }}
+          {{ field }}
+        </div>
+        {% endfor %}
+  
+        <button type="submit" class="submit-button">保存</button>
+      </form>
+    </div>
+
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -109,24 +137,15 @@
         video.currentTime = totalSeconds;
         video.play();
       }
+
+      function flexTextarea(el) {
+  const dummy = el.querySelector('.FlexTextarea__dummy')
+  el.querySelector('.FlexTextarea__textarea').addEventListener('input', e => {
+    dummy.textContent = e.target.value + '\u200b'
+  })
+}
+
+document.querySelectorAll('.FlexTextarea').forEach(flexTextarea)
     </script>
-  </div>
-  {% endif %}
-  <div class="form-wrapper">
-    <form method="POST">
-      {% csrf_token %} {% for field in form %}
-      <div class="fieldWrapper">
-        {{ field.errors }} {{ field.label_tag }} {{ field }}
-      </div>
-
-      {% endfor %}
-
-      <button type="submit" class="ui button">保存</button>
-
-      <p><strong>作成日時:</strong> {{ chapter.created_at }}</p>
-      <p><strong>更新日時:</strong> {{ chapter.updated_at }}</p>
-      <p><strong>作成者:</strong> {{ chapter.user.username }}</p>
-    </form>
-  
 
 {% endblock %}

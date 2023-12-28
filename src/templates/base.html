@@ -33,13 +33,14 @@
       </ul>
     </header>
 
+    {% if messages %}
+      {% for message in messages %}
+        <p class="message">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+
     <!-- main -->
     <main>
-      {% if messages %}
-        {% for message in messages %}
-          <p class="message">{{ message }}</p>
-        {% endfor %}
-      {% endif %}
       {% block main %} {% endblock main %}
     </main>
   </body>

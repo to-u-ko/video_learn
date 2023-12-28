@@ -8,13 +8,28 @@
 
 {% block main %}
   <style>
-    main {
+    .main-container {
       grid-row: 2 / 3;
-      grid-column: 2 / 5;
-      padding: 50px;
+      grid-column: 1 / 4;
+      gap: 20px;
     }
+
     .thsize {
-      font-size: 80%;
+      padding: 1em 2em;
+    }
+
+    .trtop {
+      
+    }
+
+    th, td {
+      border: solid 1px #948080;   
+    }
+    table {
+      width: auto;
+      border-spacing: 0;
+      border: 3px solid #948080;
+      border-radius: 10px;
     }
   </style>
 
@@ -26,22 +41,22 @@
       placeholder="キーワードで検索"
       style="width: 50%"
     />
-    <table id="Table" border="1" width="75%" bgcolor="white">
-      <tr height="50">
-        <th width="60%">タイトル</th>
-        <th width="20%" class="thsize">投稿者</th>
-        <th width="20%" class="thsize">投稿日時</th>
+    <table id="Table">
+      <tr class="trtop">
+        <th class="thsize">タイトル</th>
+        <th class="thsize">投稿者</th>
+        <th class="thsize">投稿日時</th>
         {% if user.is_staff %}
-        <th width="20%" class="thsize">ステータス</th>
+        <th class="thsize">ステータス</th>
         {% endif %}
       </tr>
-      {% for item in chapter_list %}
+      {% for chapter in chapter_list %}
       <tr height="40">
-        <td><a href="{% url 'video' item.id %}">{{ item.video_title }}</a></td>
-        <td align="center" class="thsize">{{ item.user.username }}</td>
-        <td align="center" class="thsize">{{ item.created_at }}</td>
+        <td align="center" class="thsize"><a href="{% url 'video' chapter.id %}">{{ chapter.video_title }}</a></td>
+        <td align="center" class="thsize">{{ chapter.user.username }}</td>
+        <td align="center" class="thsize">{{ chapter.created_at }}</td>
         {% if user.is_staff %}
-        <td align="center" class="thsize">{{ item.status }}</td>
+        <td align="center" class="thsize">{{ chapter.status }}</td>
         {% endif %}
       </tr>
       {% empty %}
@@ -49,8 +64,11 @@
         <td>まだチャプターがありません</td>
         <td></td>
         <td></td>
-        {% endfor %}
+        {% if user.is_staff %}
+          <td></td>
+        {% endif %}
       </tr>
+      {% endfor %}
     </table>
   </div>
 

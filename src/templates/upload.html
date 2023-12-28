@@ -4,240 +4,45 @@
 
 {% block main %}
   <style>
-    /* 動画アップロードボタンの拡大表示・ドラッグアンドドロップに関するCSS */
-        #id_video_file {
-          display: none; /* 入力要素を非表示に */
-        }
+    .submit-button {
+      margin-top: 40px;
+      width: 100%;
+      font-size: 1.2em;
+    }
 
+    #id_video_path {
+      border: 0;
+      padding: 3px;
+    }
 
-        #dropzone-03{
-          box-sizing: border-box;
-          padding: 24px 12px;
-          margin: 12px 0px;
-          border: 3px dashed #f69f4d;
-          border-radius: 8px;
-          background-color:#f69f4d;
-          text-align: center;
-          cursor: pointer;
-        }
+    #uploading {
+      display: none;
 
-        #dropzone-03.s-dragover{
-          border-color: #f69f4d;
-          background-color: #f7f7f3;
-          color: #0a0a0a;
-          font-weight: bold;
-        }
+    }
 
-        .title_style {
-          font-size: 16px; 
-          padding: 10px 20px; 
-          display: inline-block;
-          cursor: pointer;
-        }
-
-    /* 動画アップロード時に「アップロード中」表示に関するCSS */
-      .uploadingMSG {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr 1fr;
-          margin-bottom: 10px;
-        }
-
-      #uploadingBubble{
-          display: none;
-          grid-column: 1/4;
-          position:relative;
-          width:220px;
-          height:40px;
-          background:#FFFFFF;
-          padding:10px;
-          text-align:center;
-          border:3px solid #000000;
-          color:#000000;
-          font-size:14px;
-          font-weight:bold;
-          border-radius:18px;
-          -webkit-border-radius:18px;
-          -moz-border-radius:18px;
-      }
-
-      #uploadingBubble:after,#uploadingBubble:before{
-          border: solid transparent;
-          content:'';
-          height:0;
-          width:0;
-          pointer-events:none;
-          position:absolute;
-          left:100%;
-          top:50%;
-      }
-
-      #uploadingBubble:after{
-          border-color: rgba(255, 255, 255, 0);
-          border-top-width:9px;
-          border-bottom-width:9px;
-          border-left-width:21px;
-          border-right-width:21px;
-          margin-top: -9px;
-          border-left-color:#FFFFFF;
-      }
-
-      #uploadingBubble:before{
-          border-color: rgba(0, 0, 0, 0);
-          border-top-width:12px;
-          border-bottom-width:12px;
-          border-left-width:28px;
-          border-right-width:28px;
-          margin-top: -12px;
-          margin-left: 3px;
-          border-left-color:#000000;
-      }
-
-        .chara_icon {
-          grid-column: 4/5;
-          width: 90px;
-          user-select: none;
-          display: none;
-        }
   </style>
-
   <div class="main-container">
     <h2>動画アップロード</h2>
-    <p>{{user.username}}さん、ようこそ</p>
 
-  <div class="uploadingMSG" >
-    <div id="uploadingBubble">アップロード中...<br>画面変わるまで待っててね</div>
-    <img
-      class="chara_icon"
-      id="chara"
-      src="{% static 'chara_icon.png' %}"
-      alt="character-icon"
-      oncontextmenu="return false;"
-    />
-  </div>
-
-  <form
-    action="{% url 'upload' %}"
-    method="post"
-    enctype="multipart/form-data"
-    name="form1"
-    id="myform"
-  >
-    {% csrf_token %} {{ form.as_p }}
-
-    <!-- </label> -->
-    <button type=button id="dropzone-03">ファイル選択もしくはドロップ</button>
-    <div id="output-03" class="output"></div>
-
-    <a
-      href="javascript:form1.submit()"
-      class="circleButton"
-      id="uploadButton"
-      style="
-        background-color: #f3cc90;
-        border-radius: 5%;
-        width: 60%;
-        height: 50px;
-        margin-top: 30px;
-        border: 2px solid #948080;
-      "
-      >アップロード</a
+    <form
+      action="{% url 'upload' %}"
+      method="post"
+      enctype="multipart/form-data"
+      name="form1"
+      id="myform"
     >
-  </form>
-
-    <script>
-    // 動画アップロードボタンの拡大表示・ドラッグアンドドロップに関するJS
-        const el_input_file_03 = document.getElementById('id_video_file');
-        const bt_file_03 = document.getElementById('dropzone-03');
-        const el_dropzone_03 = document.getElementById('dropzone-03');
-        const el_output_03 = document.getElementById('output-03');
-      //ボタンへのクリックをinput[type="file"]へ送る。
-        bt_file_03.addEventListener('click',()=>{
-          el_input_file_03.click();
-        })
-      //ボタンへのdragenter
-        bt_file_03.addEventListener('dragenter',()=>{
-          bt_file_03.classList.add('s-dragover');
-        });
-      //ボタンへのdragover
-        bt_file_03.addEventListener('dragover',e=>{
-          e.preventDefault();
-        });
-      //ボタンからのdragleave
-        bt_file_03.addEventListener('dragleave',()=>{
-          bt_file_03.classList.remove('s-dragover');
-        });
-      //ボタンへのdrop => ファイル処理
-        bt_file_03.addEventListener('drop',e=>{
-          e.preventDefault();
-          bt_file_03.classList.remove('s-dragover');
-          const files = e.dataTransfer.files;
-          el_input_file_03.files = files;
-          filesInformation(files);
-        });
-      //ボタンクリック => ファイル処理
-        el_input_file_03.addEventListener('change',e=>{
-          const files = e.target.files;
-          filesInformation(files);
-        });
-      //ファイル情報を表示する関数
-        function filesInformation(files){
-          if(files.length===0) return;
-          const array_output = [
-            //escHtml(str)はエスケープ処理をする関数
-            'name: ' + files[0].name,
-            'size: ' + (files[0].size /1024/1024|0) + 'MB'
-          ];
-          el_output_03.innerHTML = array_output.join('<br>');
-        }
-    
-      //※ドロップゾーンに関する処理　ボタンへの処理と同じ
-      //ドロップゾーンへのdragenter
-        el_dropzone_03.addEventListener('dragenter',()=>{
-          el_dropzone_03.classList.add('s-dragover');
-        });
-      //ドロップゾーンへのdragover
-        el_dropzone_03.addEventListener('dragover',e=>{
-          e.preventDefault();
-        });
-     //ドロップゾーンからのdragleave
-        el_dropzone_03.addEventListener('dragleave',()=>{
-          el_dropzone_03.classList.remove('s-dragover');
-        });
-      //ドロップゾーンへのdrop => ファイル処理
-        el_dropzone_03.addEventListener('drop',e=>{
-          e.preventDefault();
-          el_dropzone_03.classList.remove('s-dragover');
-          const files = e.dataTransfer.files;
-          filesInformation(files);
-        });
-
-    // 動画アップロード時に「アップロード中」表示に関するJS   
-        document.getElementById('myform').addEventListener('submit', function(event) {
-
-        const fileInput = document.getElementById('id_video_file');
-        const titleInput = document.getElementById('id_video_title');
-
-        if (fileInput.files.length > 0 && titleInput.value.trim() !== '') {
-          setTimeout( ()=>{
-            // ファイルが選択され、タイトルも入力されている場合
-            document.getElementById('uploadingBubble').style.display = 'block';
-            document.getElementById('chara').style.display = 'block';
-          },2000);
-      }});
-
-    // 動画アップロード時に「アップロード中」表示に関するJS   
-      document.getElementById('uploadButton').addEventListener('click', function(event) {
-
-        const fileInput = document.getElementById('id_video_file');
-        const titleInput = document.getElementById('id_video_title');
-
-        if (fileInput.files.length > 0 && titleInput.value.trim() !== '') {
-          setTimeout( ()=>{
-            // ファイルが選択され、タイトルも入力されている場合
-            document.getElementById('uploadingBubble').style.display = 'block';
-            document.getElementById('chara').style.display = 'block';
-          },2000);
-      }});
-    </script>
+      {% csrf_token %} 
+      {{ form.as_p }}
+      <button class="submit-button" id="upload-button">アップロード</button>
+    </form>
+    <p id="uploading">アップロード中・・・</p>
   </div>
+
+  <script>
+    document.getElementById('upload-button').addEventListener('click', function(event) {
+      setTimeout( ()=>{
+        document.getElementById('uploading').style.display = 'block'
+      },1000);
+    });
+</script>
 {% endblock main %}

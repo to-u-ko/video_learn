@@ -3,24 +3,61 @@
 {% block title %}ログイン{% endblock title %}
 
 {% block main %}
-  <div class="main-container">
-    <h1>チャプたん</h1>
+<style>
+  .login-wrapper {
+    grid-row: 2 / 3;
+    grid-column: 2 / 3;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+    font-size: 3em;
+    text-align: center;
+  }
+
+  #id_username {
+    margin-bottom: 20px;
+  }
+
+  .login-button {
+    display:flex;
+    justify-content: center;
+  }
+ 
+  .circle-button {
+    color: white;
+    font-weight: bold;
+    font-size: 1.5em;
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    background-color: rgb(255, 136, 0);
+    border: 2px solid rgb(255, 136, 0);
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 20px;
+  }
+
+  .circle-button:active {
+    position: relative;
+    top: 5px;
+  }
+
+</style>
+  <div class="login-wrapper">
+    <h1>Video-Learn</h1>
     <form action="{% url 'login' %}" name="form1" method="post">
       {% csrf_token %}
       <!-- form挿入 -->
       {{ form.as_p }}
       <p><input type="hidden" name="next" value="{{next}}" /></p>
       <div class="login-button">
-        <a href="javascript:form1.submit()" class="circleButton">ログイン</a>
-        <img
-          class="chara_icon"
-          src="{% static 'chara_icon.png' %}"
-          alt="character-icon"
-          oncontextmenu="return false;"
-        />
+        <button type="submit" class="circle-button">ログイン</button>
       </div>
     </form>
-
-    <p><a href="/admin/" class="admin">管理者用ページ</a></p>
+    <h3><a href="/admin/" class="admin">管理者用ページ</a></h3>
   </div>
 {% endblock %}

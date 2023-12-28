@@ -17,6 +17,7 @@ class LoginForm(AuthenticationForm):
     pass
 
 class UploadForm(forms.ModelForm):
+    video_path = forms.FileField(widget=forms.FileInput(attrs={'accept':'.mp4'}))
     class Meta:
         model=Chapter
         fields=['video_title', 'video_path']
@@ -24,6 +25,7 @@ class UploadForm(forms.ModelForm):
            'video_title':'タイトル',
            'video_path':'動画ファイル'
            }
+
 
     def clean_video_title(self):
         video_title = self.cleaned_data.get('video_title')
@@ -34,26 +36,19 @@ class UploadForm(forms.ModelForm):
                 
         return video_title
 
-class EditForm(forms.ModelForm):
+class ChapterForm(forms.ModelForm):         
     class Meta:
         model=Chapter
         fields=[
             'video_title',
             'chapter_data',
         ]
-        labels={
-           'video_title':'タイトル',
-           'chapter_data':'チャプター',
-           }
+       
 
     
 class SummaryForm(forms.ModelForm):
     class Meta:
         model=Summary
-        fields=[
+        fields=[           
             'summary_text'
         ]
-
-        labels={
-            'summary_text':'要約記事'
-        }

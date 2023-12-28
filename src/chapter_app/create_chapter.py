@@ -202,7 +202,7 @@ def celery_process(user_id, chapter_id):
         chapter_text = get_chapter(chatgpt_response)
         save_chapter(chapter_id, status='完了', chapter_data=chapter_text)
         summary_text = get_summary(chatgpt_response)
-        Summary.objects.create(chapter=chapter, summary_text = summary_text)
+        
 
         # 処理完了のメール送信
         subject = 'チャプたん通知（完了）'
