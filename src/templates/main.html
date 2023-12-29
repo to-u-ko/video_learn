@@ -9,86 +9,171 @@
 {% block main %}
   <style>
     .main-container {
-      grid-row: 2 / 3;
       grid-column: 1 / 4;
       gap: 20px;
     }
 
-    .thsize {
-      padding: 1em 2em;
+    #tile-view, #table-view {
+      background-color: #948080;
+      color: #fff;
+      border: 0;
+      padding: 0.5em;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 0 5px;
     }
 
-    .trtop {
-      
+    #table-container {
+      display: none;
     }
 
     th, td {
+      padding: 1em 2em;
       border: solid 1px #948080;   
     }
+
     table {
       width: auto;
       border-spacing: 0;
       border: 3px solid #948080;
       border-radius: 10px;
     }
+
+    #tile-container {
+      display:flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 3%;
+    }
+
+    .tile-item {
+      width: 17%;
+      line-height: 1.5em;
+      border: 2px solid rgb(255, 136, 0);
+      border-radius: 10px;
+      margin-bottom: 2%;
+    }
+
+    .video-info-wrapper {
+      margin:5px
+    }
+
+    img {
+      width: 100%;
+      border-radius: 10px 10px 0 0;
+      margin-bottom: 5px;
+    }
   </style>
 
   <div class="main-container">
     <h2>チャプター一覧</h2>
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="キーワードで検索"
-      style="width: 50%"
-    />
-    <table id="Table">
-      <tr class="trtop">
-        <th class="thsize">タイトル</th>
-        <th class="thsize">投稿者</th>
-        <th class="thsize">投稿日時</th>
-        {% if user.is_staff %}
-        <th class="thsize">ステータス</th>
-        {% endif %}
-      </tr>
-      {% for chapter in chapter_list %}
-      <tr height="40">
-        <td align="center" class="thsize"><a href="{% url 'video' chapter.id %}">{{ chapter.video_title }}</a></td>
-        <td align="center" class="thsize">{{ chapter.user.username }}</td>
-        <td align="center" class="thsize">{{ chapter.created_at }}</td>
-        {% if user.is_staff %}
-        <td align="center" class="thsize">{{ chapter.status }}</td>
-        {% endif %}
-      </tr>
-      {% empty %}
-      <tr height="40">
-        <td>まだチャプターがありません</td>
-        <td></td>
-        <td></td>
-        {% if user.is_staff %}
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="キーワードで検索"
+        style="width: 50%"
+      />
+      <div class="view-button">
+        <button type="button" id="tile-view">サムネイル表示</button>
+        <button type="button" id="table-view">テーブル表示</button>
+      </div>
+
+    <div id="table-container">
+      <table id="Table">
+        <tr class="trtop">
+          <th>タイトル</th>
+          <th>投稿者</th>
+          <th>投稿日時</th>
+          {% if user.is_staff %}
+          <th>ステータス</th>
+          {% endif %}
+        </tr>
+        {% for chapter in chapter_list %}
+        <tr height="40">
+          <td align="center"><a href="{% url 'video' chapter.id %}">{{ chapter.video_title }}</a></td>
+          <td align="center">{{ chapter.user.username }}</td>
+          <td align="center">{{ chapter.created_at }}</td>
+          {% if user.is_staff %}
+          <td align="center">{{ chapter.status }}</td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr height="40">
+          <td>まだチャプターがありません</td>
           <td></td>
-        {% endif %}
-      </tr>
+          <td></td>
+          {% if user.is_staff %}
+            <td></td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div id="tile-container">
+      {% for chapter in chapter_list %}
+      <div class="tile-item">
+        <img src="../sum1.jpg">
+        <div class="video-info-wrapper">
+          <h3><a href="{% url 'video' chapter.id %}">{{ chapter.video_title }}</a></h3>
+          <p>投稿者：{{ chapter.user.username }}</p>
+          <p>投稿日時：{{ chapter.created_at }}</p>
+          {% if user.is_staff %}
+          <p>ステータス：{{ chapter.status }}</p>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+        <p>まだチャプターがありません</p>
       {% endfor %}
-    </table>
+    </div>
+  
   </div>
 
   <script>
-    document
-      .getElementById("searchInput")
-      .addEventListener("keyup", function () {
-        let searchValue = this.value.toLowerCase();
-        let tableRows = document
-          .getElementById("Table")
-          .getElementsByTagName("tr");
-
-        for (let i = 1; i < tableRows.length; i++) {
-          let rowText = tableRows[i].textContent.toLowerCase();
-          if (rowText.indexOf(searchValue) > -1) {
-            tableRows[i].style.display = "";
-          } else {
-            tableRows[i].style.display = "none";
-          }
-        }
+    // サムネイル表示とテーブル表示の切り替え
+    document.getElementById('tile-view').addEventListener('click', function(event) {
+      document.getElementById('table-container').style.display = 'none';
+      document.getElementById('tile-container').style.display = 'flex';
       });
+
+      document.getElementById('table-view').addEventListener('click', function(event) {
+        document.getElementById('tile-container').style.display = 'none';
+        document.getElementById('table-container').style.display = 'block';
+    });
+
+    // キーワード検索
+    document.getElementById("searchInput").addEventListener("keyup", function () {
+      let element = document.getElementById('table-container');
+      let style = window.getComputedStyle(element);
+      let value = style.getPropertyValue('display');
+      if (value == 'block') {
+      let searchValue = this.value.toLowerCase();
+      let tableRows = document
+        .getElementById("Table")
+        .getElementsByTagName("tr");
+
+      for (let i = 1; i < tableRows.length; i++) {
+        let rowText = tableRows[i].textContent.toLowerCase();
+        if (rowText.indexOf(searchValue) > -1) {
+          tableRows[i].style.display = "";
+        } else {
+          tableRows[i].style.display = "none";
+        }}
+      } else {
+      let searchValue = this.value.toLowerCase();
+      let tileItems = document
+        .getElementsByClassName("tile-item")
+
+      for (let i = 0; i < tileItems.length; i++) {
+        let tile = tileItems[i];
+        let tileText = tile.textContent || tile.innerText;
+        if (tileText.toLowerCase().indexOf(searchValue) > -1) {
+          tileItems[i].style.display = "";
+        } else {
+          tileItems[i].style.display = "none";
+        }
+      }
+    }});
   </script>
 {% endblock main %}
