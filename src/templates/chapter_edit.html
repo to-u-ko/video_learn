@@ -52,23 +52,23 @@
       margin-bottom: 10px;
     }
 
-    #id_chapter_data {
+    #id_chapter_text {
       border-radius: 10px;
       padding: 0.5em;
       line-height: 1.8em;
       font-size:1.2em;
       resize: none;
       width: 100%;
-      height:90%;
+      height:70%;
     }
   </style>
 
   <div class="title-menu-wrapper">
-    <h1 class="video-title">{{ chapter.video_title }}</h1>
-    <a href="{% url 'video' chapter.id %}" class="menu-button">動画閲覧</a>
-    <a href="{% url 'summary' chapter.id %}" class="menu-button">要約</a>
-    {% if chapter.transcription_path %}
-      <a href="{% url 'download_transcription' chapter.id %}" class="menu-button">文字起こしダウンロード</a>
+    <h1 class="video-title">{{ video.video_title }}</h1>
+    <a href="{% url 'video' video.id %}" class="menu-button">動画閲覧</a>
+    <a href="{% url 'summary' video.id %}" class="menu-button">要約</a>
+    {% if video.transcription_path %}
+      <a href="{% url 'download_transcription' video.id %}" class="menu-button">文字起こしダウンロード</a>
     {% endif %}
   </div>
 
@@ -77,13 +77,13 @@
       controls
       preload="auto"
       playsinline
-      src="うんこ{{ chapter.video_path.url }}"
+      src="{{ video.video_path.url }}"
       id="videoPlayer"
-      poster="../sum1.jpg"
+      poster="{{ video.thumbnail_path }}"
     >動画は再生できません。</video>
     <div class="video-info">
-      <p>動画投稿日時：{{ chapter.created_at }}</p>
-      <p>投稿者：{{ chapter.user.username }}</p>
+      <p>動画投稿日時：{{ video.created_at }}</p>
+      <p>投稿者：{{ video.user.username }}</p>
     </div>
   </div>
 
@@ -98,13 +98,8 @@
     <div class="form-wrapper">
       <form method="POST">
         {% csrf_token %} 
-        {% for field in form %}
-        <div class="fieldWrapper">
-          {{ field.errors }}
-          {{ field }}
-        </div>
-        {% endfor %}
-  
+        {{ video_form.as_p }}
+        {{ chapter_form.as_p }}
         <button type="submit" class="submit-button">保存</button>
       </form>
     </div>

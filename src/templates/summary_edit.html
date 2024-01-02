@@ -18,11 +18,11 @@
 
   </style>
   <div class="title-menu-wrapper">
-    <h1 class="video-title">{{ chapter.video_title }}</h1>
-    <a href="{% url 'summary' chapter.id %}" class="menu-button">要約閲覧</a>
-    <a href="{% url 'video' chapter.id %}" class="menu-button">動画閲覧</a>
-    {% if chapter.transcription_path %}
-      <a href="{% url 'download_transcription' chapter.id %}" class="menu-button">文字起こしダウンロード</a>
+    <h1 class="video-title">{{ video.video_title }}</h1>
+    <a href="{% url 'summary' video.id %}" class="menu-button">要約閲覧</a>
+    <a href="{% url 'video' video.id %}" class="menu-button">動画閲覧</a>
+    {% if video.transcription_path %}
+      <a href="{% url 'download_transcription' video.id %}" class="menu-button">文字起こしダウンロード</a>
     {% endif %}
   </div>
 

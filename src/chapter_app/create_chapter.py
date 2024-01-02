@@ -9,7 +9,7 @@ from langchain import LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import re
 # User,Chapterのデータベース操作用
-from .models import User,Chapter, Summary
+from .models import User, Video, Chapter, Summary
 # メール送信用
 from django.core.mail import send_mail
 # AWS_Sagemaker操作用
@@ -18,6 +18,9 @@ import sagemaker
 from sagemaker.processing import ScriptProcessor, ProcessingInput, ProcessingOutput
 #from django.core.files.base import ContentFile
 from django.conf import settings
+# 動画からサムネイル取得用
+import cv2
+import sys
 
 
 # メール送信関数
@@ -31,27 +34,49 @@ def send_email(subject, message, user_email):
 
 # データベース保存関数
 # chapterデータベースから動画タイトルをもとにデータを取得し、引数で指定された情報を上書きする
-def save_chapter(chapter_id, *, chapter_data=None, status=None, video_path=None, transcription_path=None):
-    chapter = Chapter.objects.get(id=chapter_id)
-    # chapter_dataが指定されていれば上書き
-    if chapter_data is not None:
-        chapter.chapter_data = chapter_data
-    # statusが指定されていれば上書き
-    if status is not None:
-        chapter.status = status
-    # video_pathが指定されていれば上書き
-    if video_path is not None:
-        chapter.video_path = video_path
-    # transcription_path が指定されていれば上書き
-    if transcription_path is not None:
-        chapter.transcription_path = transcription_path
+# def save_chapter(chapter_id, *, chapter_data=None, status=None, video_path=None, transcription_path=None):
+#     chapter = Chapter.objects.get(id=chapter_id)
+#     # chapter_dataが指定されていれば上書き
+#     if chapter_data is not None:
+#         chapter.chapter_data = chapter_data
+#     # statusが指定されていれば上書き
+#     if status is not None:
+#         chapter.status = status
+#     # video_pathが指定されていれば上書き
+#     if video_path is not None:
+#         chapter.video_path = video_path
+#     # transcription_path が指定されていれば上書き
+#     if transcription_path is not None:
+#         chapter.transcription_path = transcription_path
 
-    chapter.save()
+#     chapter.save()
 
+# サムネイル取得関数
+def create_thumbnail(video_id, video_url):
+    try:
+        cap = cv2.VideoCapture(video_url)
+        if not cap.isOpened(): return
+        fps = cap.get(cv2.CAP_PROP_FPS)
+
+        # 動画開始時点から1秒後のフレームをサムネイル画像として利用するように指定する
+        target_second = 1
+
+        # 動画開始時点から1秒後のフレーム枚数目を読み込む様に設定する
+        cap.set(cv2.CAP_PROP_POS_FRAMES, fps * target_second)
+
+        # 対象フレームを取得する
+        ret, frame = cap.read()
+
+        output_path = f"/code/media/thumbnail_{video_id}.jpg"
+        cv2.imwrite(output_path, frame)
+        return f"/media/thumbnail_{video_id}.jpg"
+    
+    except Exception as e:
+        print(e)
 
 # sagemakerによる文字起こし処理関数
 # boto3を使用してsagemaker processingを呼び出しfaster_whipserによる文字起こしを実行する
-def sagemaker_job(video_title):
+def sagemaker_job(video_id):
     script_processor = ScriptProcessor(
                     image_uri= settings.IMAGE_URI,
                     role= settings.ROLE,
@@ -61,14 +86,14 @@ def sagemaker_job(video_title):
 
     script_processor.run(code='/code/chapter_app/sage_whisper.py',
                         inputs=[ProcessingInput(
-                            source= f's3://s3-chapter/storage/videos/{video_title}.mp4',
+                            source= f's3://s3-chapter/storage/videos/video_{video_id}.mp4',
                             destination='/opt/ml/processing/input')],
                         outputs=[ProcessingOutput(
                             source='/opt/ml/processing/output',
                             destination='s3://s3-chapter/storage/transcriptions/')],
-                            arguments=['--video_title', video_title])
+                            arguments=['--video_id', video_id])
     
-    transcription_path = f"storage/transcriptions/{video_title}.txt"
+    transcription_path = f"storage/transcriptions/transcription_{video_id}.txt"
 
     return transcription_path
 
@@ -173,24 +198,26 @@ def get_chapter(chatgpt_response):
 def get_summary(chatgpt_response):
     pattern = r"\[\d{1,2}:\d{2}:\d{2}\]"
     # "[時間]"を"##"に置換
-    summary_article = re.sub(pattern, "##", chatgpt_response)
-    return summary_article
+    summary_text = re.sub(pattern, "##", chatgpt_response)
+    return summary_text
 
 
 # celeryで処理する関数に設定
 @shared_task
-def celery_process(user_id, chapter_id):
+def celery_process(user_id, video_id):
     try:
         user = User.objects.get(pk=user_id)
         user_email = user.email
-        chapter = Chapter.objects.get(id=chapter_id)
+        video = Video.objects.get(pk=video_id)
         
         # statusを「処理中」に変更
-        save_chapter(chapter_id, status='処理中')
+        video.status ='処理中'
+        video.save()
         
         # sagemakerを呼び出しfaster-whisperで文字起こし
-        transcriptin_path = sagemaker_job(chapter.video_title)
-        save_chapter(chapter_id, transcription_path=transcriptin_path)
+        transcriptin_path = sagemaker_job(video_id)
+        video.transcription_path = transcriptin_path
+        video.save()
         print('文字起こし完了')
         
         # S3に保存された文字起こしファイルから中身のテキストを取得
@@ -200,10 +227,16 @@ def celery_process(user_id, chapter_id):
         chatgpt_response = gpt4turbo_create_chapter_summary(transcription_text)
         print('chatGPT処理完了')
         chapter_text = get_chapter(chatgpt_response)
-        save_chapter(chapter_id, status='完了', chapter_data=chapter_text)
+        chapter = Chapter.objects.get(video=video)
+        chapter.chapter_text = chapter_text
+        chapter.save()
         summary_text = get_summary(chatgpt_response)
+        summary = Summary.objects.get(video=video)
+        summary.summary_text = summary_text
+        summary.save()
+        video.status = '完了'
+        video.save()
         
-
         # 処理完了のメール送信
         subject = 'チャプたん通知（完了）'
         message = f'チャプたんで動画「{chapter.video_title}」のチャプターと要約の生成が完了しました。'
@@ -215,8 +248,8 @@ def celery_process(user_id, chapter_id):
         print(e)
         user = User.objects.get(pk=user_id)
         user_email = user.email
-        
-        save_chapter(chapter_id, status='処理エラー')
+        video = Video.objects.get(pk=video_id)
+        video.status = "処理エラー"
 
         subject = 'チャプたん通知（エラー）'
         message = f'チャプたんで動画「{chapter.video_title}」の処理中にエラーが発生しました。'

@@ -1,5 +1,4 @@
 {% extends 'base.html' %} {% load static %}
-
 {% block title %}チャプター一覧{% endblock title %} 
 
 {% block meta %}
@@ -48,8 +47,9 @@
 
     .tile-item {
       width: 17%;
+      height: 300px;
       line-height: 1.5em;
-      border: 2px solid rgb(255, 136, 0);
+      border: 2px solid #948080;
       border-radius: 10px;
       margin-bottom: 2%;
     }
@@ -78,6 +78,7 @@
         <button type="button" id="table-view">テーブル表示</button>
       </div>
 
+    <!-- テーブル表示用 -->
     <div id="table-container">
       <table id="Table">
         <tr class="trtop">
@@ -88,13 +89,13 @@
           <th>ステータス</th>
           {% endif %}
         </tr>
-        {% for chapter in chapter_list %}
+        {% for video in videos %}
         <tr height="40">
-          <td align="center"><a href="{% url 'video' chapter.id %}">{{ chapter.video_title }}</a></td>
-          <td align="center">{{ chapter.user.username }}</td>
-          <td align="center">{{ chapter.created_at }}</td>
+          <td align="center"><a href="{% url 'video' video.id %}">{{ video.video_title }}</a></td>
+          <td align="center">{{ video.user.username }}</td>
+          <td align="center">{{ video.created_at }}</td>
           {% if user.is_staff %}
-          <td align="center">{{ chapter.status }}</td>
+          <td align="center">{{ video.status }}</td>
           {% endif %}
         </tr>
         {% empty %}
@@ -110,16 +111,17 @@
       </table>
     </div>
 
+    <!-- サムネイル表示用 -->
     <div id="tile-container">
-      {% for chapter in chapter_list %}
+      {% for video in videos %}
       <div class="tile-item">
-        <img src="../sum1.jpg">
+        <img src="{{ video.thumbnail_path }}">
         <div class="video-info-wrapper">
-          <h3><a href="{% url 'video' chapter.id %}">{{ chapter.video_title }}</a></h3>
-          <p>投稿者：{{ chapter.user.username }}</p>
-          <p>投稿日時：{{ chapter.created_at }}</p>
+          <h3><a href="{% url 'video' video.id %}">{{ video.video_title }}</a></h3>
+          <p>投稿者：{{ video.user.username }}</p>
+          <p>投稿日時：{{ video.created_at }}</p>
           {% if user.is_staff %}
-          <p>ステータス：{{ chapter.status }}</p>
+          <p>ステータス：{{ video.status }}</p>
           {% endif %}
         </div>
       </div>

@@ -34,13 +34,13 @@
   </style>
 
   <div class="title-menu-wrapper">
-    <h1 class="video-title">{{ chapter.video_title }}</h1>
-    {% if user == chapter.user %}
-      <a href="{% url 'summary_edit' chapter.id %}" class="menu-button">要約編集</a>
+    <h1 class="video-title">{{ video.video_title }}</h1>
+    {% if user == video.user %}
+      <a href="{% url 'summary_edit' video.id %}" class="menu-button">要約編集</a>
     {% endif %} 
-    <a href="{% url 'video' chapter.id %}" class="menu-button">動画閲覧</a>
-    {% if chapter.transcription_path %}
-      <a href="{% url 'download_transcription' chapter.id %}" class="menu-button">文字起こしダウンロード</a>
+    <a href="{% url 'video' video.id %}" class="menu-button">動画閲覧</a>
+    {% if video.transcription_path %}
+      <a href="{% url 'download_transcription' video.id %}" class="menu-button">文字起こしダウンロード</a>
     {% endif %}
   </div>
 

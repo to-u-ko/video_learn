@@ -2,11 +2,6 @@ Django<4
 uwsgi
 mysqlclient == 2.1.0
 
-faster-whisper
-ffmpeg-python
-future
-pydub
-pyee
 typing_extensions
 langchain
 openai == 0.28.1
@@ -22,3 +17,5 @@ sagemaker
 
 django-mdeditor
 Markdown
+
+opencv-python

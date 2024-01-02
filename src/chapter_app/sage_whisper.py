@@ -11,15 +11,15 @@ def seconds_to_hms(seconds):
 
 # 文字起こし関数
 # 動画タイトルを与えると、その動画の文字起こしをしてテキストファイルを生成する
-def faster_whisper(video_title):
-    video_path = f'/opt/ml/processing/input/{video_title}.mp4'
+def faster_whisper(video_id):
+    video_path = f'/opt/ml/processing/input/video_{video_id}.mp4'
     model_size = "medium"
     model = WhisperModel(model_size, device="cuda", compute_type="float32")
 
     ####タイムスタンプ付き、テキストのみ書き出し####
     segments, info = model.transcribe(video_path, beam_size=5, temperature=1.0, language="ja")
 
-    transcription_path = f'/opt/ml/processing/output/{video_title}.txt'
+    transcription_path = f'/opt/ml/processing/output/transcription_{video_id}.txt'
 
     with open(transcription_path, 'w',encoding="utf-8") as f:
         for segment in segments:
@@ -30,10 +30,10 @@ def faster_whisper(video_title):
 if __name__ == '__main__':
     # argparseを使用してコマンドライン引数を解析
     parser = argparse.ArgumentParser(description="動画の文字起こし処理")
-    parser.add_argument("--video_title", type=str, required=True, help="動画のタイトル")
+    parser.add_argument("--video_id", type=str, required=True, help="動画のタイトル")
 
     # 引数を解析
     args = parser.parse_args()
 
     # 解析した引数を関数に渡す
-    faster_whisper(args.video_title)
+    faster_whisper(args.video_id)
