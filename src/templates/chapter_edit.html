@@ -48,7 +48,7 @@
 
     #id_video_title {
       padding: 0.3em;
-      font-size:2em;
+      font-size:1.5em;
       margin-bottom: 10px;
     }
 
@@ -82,7 +82,7 @@
       poster="{{ video.thumbnail_path }}"
     >動画は再生できません。</video>
     <div class="video-info">
-      <p>動画投稿日時：{{ video.created_at }}</p>
+      <p>動画投稿日時：{{ video.uploaded_at }}</p>
       <p>投稿者：{{ video.user.username }}</p>
     </div>
   </div>

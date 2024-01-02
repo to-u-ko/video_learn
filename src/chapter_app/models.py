@@ -14,7 +14,7 @@ class User(AbstractUser):
 class Video(models.Model):   
     def video_upload_path(instance, filename):
         ext = filename.split('.')[-1]
-        return f"storage/videos/{instance.id}.{ext}"
+        return f"storage/videos/video_{instance.id}.{ext}"
      
     user = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=1)
     video_title = models.CharField(max_length=255, unique=True)

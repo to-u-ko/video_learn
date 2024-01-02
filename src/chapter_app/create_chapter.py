@@ -77,6 +77,7 @@ def create_thumbnail(video_id, video_url):
 # sagemakerによる文字起こし処理関数
 # boto3を使用してsagemaker processingを呼び出しfaster_whipserによる文字起こしを実行する
 def sagemaker_job(video_id):
+    video_id = str(video_id)
     script_processor = ScriptProcessor(
                     image_uri= settings.IMAGE_URI,
                     role= settings.ROLE,
@@ -209,6 +210,7 @@ def celery_process(user_id, video_id):
         user = User.objects.get(pk=user_id)
         user_email = user.email
         video = Video.objects.get(pk=video_id)
+        chapter = Chapter.objects.get(video=video)
         
         # statusを「処理中」に変更
         video.status ='処理中'
@@ -227,7 +229,6 @@ def celery_process(user_id, video_id):
         chatgpt_response = gpt4turbo_create_chapter_summary(transcription_text)
         print('chatGPT処理完了')
         chapter_text = get_chapter(chatgpt_response)
-        chapter = Chapter.objects.get(video=video)
         chapter.chapter_text = chapter_text
         chapter.save()
         summary_text = get_summary(chatgpt_response)
@@ -239,18 +240,17 @@ def celery_process(user_id, video_id):
         
         # 処理完了のメール送信
         subject = 'チャプたん通知（完了）'
-        message = f'チャプたんで動画「{chapter.video_title}」のチャプターと要約の生成が完了しました。'
+        message = f'チャプたんで動画「{video.video_title}」のチャプターと要約の生成が完了しました。'
         send_email(subject, message, user_email)
         
 
     except Exception as e:
-        # Chapterでエラーが起きた際の例外処理
-        print(e)
+
         user = User.objects.get(pk=user_id)
         user_email = user.email
         video = Video.objects.get(pk=video_id)
         video.status = "処理エラー"
 
         subject = 'チャプたん通知（エラー）'
-        message = f'チャプたんで動画「{chapter.video_title}」の処理中にエラーが発生しました。'
+        message = f'チャプたんで動画「{video.video_title}」の処理中にエラーが発生しました。'
         send_email(subject, message, user_email)

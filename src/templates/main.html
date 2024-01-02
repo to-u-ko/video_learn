@@ -47,7 +47,7 @@
 
     .tile-item {
       width: 17%;
-      height: 300px;
+      height: auto;
       line-height: 1.5em;
       border: 2px solid #948080;
       border-radius: 10px;
@@ -93,7 +93,7 @@
         <tr height="40">
           <td align="center"><a href="{% url 'video' video.id %}">{{ video.video_title }}</a></td>
           <td align="center">{{ video.user.username }}</td>
-          <td align="center">{{ video.created_at }}</td>
+          <td align="center">{{ video.uploaded_at }}</td>
           {% if user.is_staff %}
           <td align="center">{{ video.status }}</td>
           {% endif %}
@@ -119,7 +119,7 @@
         <div class="video-info-wrapper">
           <h3><a href="{% url 'video' video.id %}">{{ video.video_title }}</a></h3>
           <p>投稿者：{{ video.user.username }}</p>
-          <p>投稿日時：{{ video.created_at }}</p>
+          <p>投稿日時：{{ video.uploaded_at }}</p>
           {% if user.is_staff %}
           <p>ステータス：{{ video.status }}</p>
           {% endif %}
@@ -137,12 +137,37 @@
     document.getElementById('tile-view').addEventListener('click', function(event) {
       document.getElementById('table-container').style.display = 'none';
       document.getElementById('tile-container').style.display = 'flex';
+      document.cookie = 'view_style=tile';
       });
 
-      document.getElementById('table-view').addEventListener('click', function(event) {
+    document.getElementById('table-view').addEventListener('click', function(event) {
         document.getElementById('tile-container').style.display = 'none';
         document.getElementById('table-container').style.display = 'block';
+        document.cookie = 'view_style=table';
     });
+
+    // cookieからview_styleの値を取得し、それに基づいて表示を切り替え
+    function getCookie(key) {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        var cookiesArray = cookie.split('='); 
+        if (cookiesArray[0].trim() == key.trim()) { 
+            return cookiesArray[1];  // (key[0],value[1])
+        }
+    }
+    return '';
+    }
+
+    let view_style = getCookie('view_style');
+    if (view_style == 'table') {
+      document.getElementById('tile-container').style.display = 'none';
+      document.getElementById('table-container').style.display = 'block';
+    } else if (view_style == 'tile') {
+      document.getElementById('table-container').style.display = 'none';
+      document.getElementById('tile-container').style.display = 'flex';
+    }   
+
+    
 
     // キーワード検索
     document.getElementById("searchInput").addEventListener("keyup", function () {

@@ -12,6 +12,7 @@ def seconds_to_hms(seconds):
 # 文字起こし関数
 # 動画タイトルを与えると、その動画の文字起こしをしてテキストファイルを生成する
 def faster_whisper(video_id):
+    video_id = str(video_id)
     video_path = f'/opt/ml/processing/input/video_{video_id}.mp4'
     model_size = "medium"
     model = WhisperModel(model_size, device="cuda", compute_type="float32")
