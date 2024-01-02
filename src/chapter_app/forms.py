@@ -3,7 +3,7 @@ from django import forms
 # from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 # カスタムのUserモデルを適用
-from .models import User, Chapter, Summary
+from .models import User, Video, Chapter, Summary
 
 #ファイル拡張子を指定
 from django.core.validators import FileExtensionValidator 
@@ -17,34 +17,43 @@ class LoginForm(AuthenticationForm):
     pass
 
 class UploadForm(forms.ModelForm):
-    video_path = forms.FileField(widget=forms.FileInput(attrs={'accept':'.mp4'}))
+    video_path = forms.FileField(widget=forms.FileInput(attrs={'accept':'.mp4'}), label='動画ファイル')
     class Meta:
-        model=Chapter
+        model=Video
         fields=['video_title', 'video_path']
         labels={
            'video_title':'タイトル',
-           'video_path':'動画ファイル'
            }
-
 
     def clean_video_title(self):
         video_title = self.cleaned_data.get('video_title')
 
         #既存の動画と重複しているかチェック
-        if Chapter.objects.filter(video_title=video_title).exists():
+        if Video.objects.filter(video_title=video_title).exists():
             raise forms.ValidationError('同じタイトルが既に存在しています。')
                 
         return video_title
+
+class VideoForm(forms.ModelForm):
+    class Meta:
+        model=Video
+        fields=[
+            'video_title',
+        ]
+        labels = {
+            'video_title' : '動画タイトル'
+        }
 
 class ChapterForm(forms.ModelForm):         
     class Meta:
         model=Chapter
         fields=[
-            'video_title',
-            'chapter_data',
+            'chapter_text',
         ]
+        labels = {
+            'chapter_text': 'チャプター'
+        }
        
-
     
 class SummaryForm(forms.ModelForm):
     class Meta:

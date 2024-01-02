@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
-from .models import User, Chapter, Summary
+from .models import User, Video, Chapter, Summary
 
+admin.site.register(Video)
 admin.site.register(Chapter)
 admin.site.register(Summary)
 

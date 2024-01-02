@@ -51,13 +51,13 @@
   </style>
 
   <div class="title-menu-wrapper">
-    <h1 class="video-title">{{ chapter.video_title }}</h1>
-    {% if user == chapter.user %}
-      <a href="{% url 'chapter_edit' chapter.id %}" class="menu-button">チャプター編集</a>
+    <h1 class="video-title">{{ video.video_title }}</h1>
+    {% if user == video.user %}
+      <a href="{% url 'chapter_edit' video.id %}" class="menu-button">チャプター編集</a>
     {% endif %}
-    <a href="{% url 'summary' chapter.id %}" class="menu-button">要約閲覧</a>
-    {% if chapter.transcription_path %}
-      <a href="{% url 'download_transcription' chapter.id %}" class="menu-button">文字起こしダウンロード</a>
+    <a href="{% url 'summary' video.id %}" class="menu-button">要約</a>
+    {% if video.transcription_path %}
+      <a href="{% url 'download_transcription' video.id %}" class="menu-button">文字起こしダウンロード</a>
     {% endif %}
   </div>
 
@@ -66,13 +66,13 @@
       controls
       preload="auto"
       playsinline
-      src="まｋど"
+      src="{{ video.video_path.url }}"
       id="videoPlayer"
-      poster="../sum1.jpg"
+      poster="{{ video.thumbnail_path }}"
     >動画は再生できません。</video>
     <div class="video-info">
-      <p>投稿日時：{{ chapter.created_at }}</p>
-      <p>投稿者：{{ chapter.user.username }}</p>
+      <p>投稿日時：{{ video.created_at }}</p>
+      <p>投稿者：{{ video.user.username }}</p>
     </div>
   </div>
 
