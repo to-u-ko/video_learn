@@ -3,7 +3,12 @@ version: "3.9"
 services:
   django:
     build: ./Docker/Django
-    command: bash -c "python3 manage.py migrate && python3 manage.py collectstatic --noinput && uwsgi --socket :8000 --module project.wsgi --py-autoreload 1 --logto /tmp/mylog.log"
+    command: >
+      bash -c "
+        python3 manage.py collectstatic --noinput
+        celery -A project worker -l info --concurrency=1 &
+        uwsgi --socket :8000 --module project.wsgi --py-autoreload 1 --logto /tmp/mylog.log
+        "
     volumes:
       - ./src:/code
       - ./static:/static
@@ -18,11 +23,6 @@ services:
       redis:
         # redisのヘルスチェックが終わってからappを起動させる
         condition: service_healthy
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - capabilities: [gpu]
 
   db:
     image: mysql:8.0
@@ -75,22 +75,15 @@ services:
       # ヘルスチェックが失敗しても無視する時間は30秒
       start_period: 30s
 
-  celery:
-    build: ./Docker/Django
-    tty: true
-    command: celery -A project worker -l info --concurrency=1
-    volumes:
-      - ./src:/code
-    # expose:
-    #   - "8000"
-    env_file:
-      - openai_api.env
-    depends_on:
-      - django
-      - redis
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - capabilities: [gpu]
+  # celery:
+  #   build: ./Docker/Django
+  #   tty: true
+  #   command: celery -A project worker -l info --concurrency=1
+  #   volumes:
+  #     - ./src:/code
+  #   env_file:
+  #     - openai_api.env
+  #   depends_on:
+  #     - django
+  #     - redis
 

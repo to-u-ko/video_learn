@@ -1,21 +1,25 @@
-Django<4
-uwsgi
+Django==3.2.23
+uWSGI==2.0.23
 mysqlclient == 2.1.0
 
-typing_extensions
-langchain
+# chatGPT関係
+typing-extensions==4.9.0
+langchain==0.0.352
 openai == 0.28.1
 
-celery
-django-celery-results
-django-redis
+# celery関係
+celery==5.3.6
+django-celery-results==2.5.1
+django-redis==5.4.0
 
-boto3
-django-storages
+# AWS関係 
+boto3==1.34.10
+django-storages==1.14.2
+sagemaker==2.203.0
 
-sagemaker
+# 要約のマークダウン編集関係
+django-mdeditor==0.1.20
+Markdown==3.5.1
 
-django-mdeditor
-Markdown
-
-opencv-python
+# サムネイル生成関係
+opencv-python==4.8.1.78
