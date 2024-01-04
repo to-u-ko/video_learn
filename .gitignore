@@ -2,7 +2,7 @@ mysql/*
 __pycache__/
 static/*
 openai_api.env
-src/smedia/*.jpg
+src/media/*.jpg
 test/
 src/project/settings_local.py
 src/chapter_app/old_create_chap.py
