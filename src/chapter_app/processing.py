@@ -1,7 +1,7 @@
 #celery関係
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
-# チャプター生成用
+# chatGPTAPI用
 import os
 from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
@@ -16,7 +16,6 @@ from django.core.mail import send_mail
 import boto3
 import sagemaker
 from sagemaker.processing import ScriptProcessor, ProcessingInput, ProcessingOutput
-#from django.core.files.base import ContentFile
 from django.conf import settings
 # 動画からサムネイル取得用
 import cv2
@@ -32,26 +31,8 @@ def send_email(subject, message, user_email):
     send_mail(subject, message, None, recipient_list, fail_silently=False)
 
 
-# データベース保存関数
-# chapterデータベースから動画タイトルをもとにデータを取得し、引数で指定された情報を上書きする
-# def save_chapter(chapter_id, *, chapter_data=None, status=None, video_path=None, transcription_path=None):
-#     chapter = Chapter.objects.get(id=chapter_id)
-#     # chapter_dataが指定されていれば上書き
-#     if chapter_data is not None:
-#         chapter.chapter_data = chapter_data
-#     # statusが指定されていれば上書き
-#     if status is not None:
-#         chapter.status = status
-#     # video_pathが指定されていれば上書き
-#     if video_path is not None:
-#         chapter.video_path = video_path
-#     # transcription_path が指定されていれば上書き
-#     if transcription_path is not None:
-#         chapter.transcription_path = transcription_path
-
-#     chapter.save()
-
 # サムネイル取得関数
+# 動画IDと動画タイトルを与えると動画開始1秒時点のサムネイル画像を生成し、そのファイルパスを返す
 def create_thumbnail(video_id, video_url):
     try:
         cap = cv2.VideoCapture(video_url)
@@ -117,7 +98,7 @@ def get_transcription(transcriptin_path):
 # 文字起こしテキストを与えると、チャプター＆要約されたテキストを返す
 def gpt4_create_chapter_summary(transcription_text):
 
-    # chunk_sizeなど
+    # テキスト分割
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size = 4000,
         chunk_overlap  = 100,
@@ -148,7 +129,6 @@ def gpt4_create_chapter_summary(transcription_text):
 
     chatgpt_response = ''
     # for文で分割した各テキストに対しチェーンを実行
-    # 実行結果をoutput.txtに出力
     for original_sentences in texts:
         response = llm_chain.run(original_sentences)
         chatgpt_response += f"{response}\n"
@@ -159,14 +139,23 @@ def gpt4_create_chapter_summary(transcription_text):
 # chatGPTの処理関数_gpt4turbo
 # 文字起こしテキストを与えると、チャプター＆要約されたテキストを返す
 def gpt4turbo_create_chapter_summary(transcription_text):
-    original_sentences = transcription_text 
+
+    # テキスト分割
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size = 10000,
+        chunk_overlap  = 100,
+        length_function = len,
+        is_separator_regex = False,
+    )
+
+    texts = text_splitter.create_documents([transcription_text])
 
     # 言語モデルとしてOpenAIのモデルを指定
     llm = OpenAI(model_name="gpt-4-1106-preview")
 
     # プロンプト文
     template = """
-    次の文章はITに関する講義を文字起こししたものです。
+    次の文章はITやビジネスに関する講義を文字起こししたものです。
     このテキストをテーマごとに分割し、そのテーマの要点をまとめてください。
     回答は [テーマが開始する時間] テーマのタイトル　テーマの要約 という形式でお願いします。「{original_sentences}」
     """
@@ -180,8 +169,11 @@ def gpt4turbo_create_chapter_summary(transcription_text):
     # プロンプトを実行させるチェーンを設定
     llm_chain = LLMChain(llm=llm, prompt=prompt,verbose=False)
 
-    # プロンプトを実行
-    chatgpt_response = llm_chain.run(original_sentences)
+    chatgpt_response = ''
+    # for文で分割した各テキストに対しチェーンを実行
+    for original_sentences in texts:
+        response = llm_chain.run(original_sentences)
+        chatgpt_response += f"{response}\n"
 
     return chatgpt_response
 
