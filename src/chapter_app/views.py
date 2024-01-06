@@ -154,7 +154,13 @@ def download_transcripion_view(request, pk):
     video = get_object_or_404(Video, pk=pk)
     file_name = video.transcription_path
 
-    s3 = boto3.client('s3', config=Config(signature_version='s3v4'))
+    s3 = boto3.client(
+        's3', 
+        config=Config(signature_version='s3v4'),
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region_name=settings.AWS_S3_REGION_NAME
+        )
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME 
     
     # プリサインされたURLの生成
