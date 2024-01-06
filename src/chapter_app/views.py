@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect,get_object_or_404
 from .forms import SignupForm, LoginForm, UploadForm, VideoForm, ChapterForm, SummaryForm
 from django.contrib.auth import login, logout
-from .create_chapter import celery_process, create_thumbnail
+from .processing import celery_process, create_thumbnail
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib import messages
@@ -11,23 +11,6 @@ from .models import User, Video, Chapter, Summary
 
 import boto3
 from botocore.client import Config
-
-def signup_view(request):
-    if request.method == 'POST':
-
-        form = SignupForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request,user)
-            return redirect(to='/user/')
-    else:
-        form = SignupForm()
-    
-    params = {
-        'form': form
-    }
-
-    return render(request, 'signup.html', params)
 
 
 def login_view(request):
