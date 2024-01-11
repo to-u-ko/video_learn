@@ -17,40 +17,40 @@ services:
     env_file:
       - openai_api.env
     depends_on:
-      db:
+      # db:
         # dbのヘルスチェックが終わってからappを起動させる
-        condition: service_healthy
+        # condition: service_healthy
       redis:
         # redisのヘルスチェックが終わってからappを起動させる
         condition: service_healthy
 
-  db:
-    image: mysql:8.0
-    platform: linux/amd64
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: chapter
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      TZ: "Asia/Tokyo"
-    volumes:
-      - ./mysql:/var/lib/mysql
-      - ./sql:/docker-entrypoint-initdb.d
-    # DBのコンテナのヘルスチェックを行う
-    # mysqladmin(MySQLサーバーの管理を行うクライアントを使ってDBコンテナ自身(127.0.0.1)にpingを送ってヘルスチェックを行う
-    healthcheck:
-      test: mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD
-      # ヘルスチェックのインターバルは10秒
-      interval: 10s
-      # タイムアウト時間は10秒
-      timeout: 10s
-      # リトライ回数は3回
-      retries: 3
-      # ヘルスチェックが失敗しても無視する時間は60秒
-      start_period: 60s
+  # db:
+  #   image: mysql:8.0
+  #   platform: linux/amd64
+  #   command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: chapter
+  #     MYSQL_USER: user
+  #     MYSQL_PASSWORD: password
+  #     TZ: "Asia/Tokyo"
+  #   volumes:
+  #     - ./mysql:/var/lib/mysql
+  #     - ./sql:/docker-entrypoint-initdb.d
+  #   # DBのコンテナのヘルスチェックを行う
+  #   # mysqladmin(MySQLサーバーの管理を行うクライアントを使ってDBコンテナ自身(127.0.0.1)にpingを送ってヘルスチェックを行う
+  #   healthcheck:
+  #     test: mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD
+  #     # ヘルスチェックのインターバルは10秒
+  #     interval: 10s
+  #     # タイムアウト時間は10秒
+  #     timeout: 10s
+  #     # リトライ回数は3回
+  #     retries: 3
+  #     # ヘルスチェックが失敗しても無視する時間は60秒
+  #     start_period: 60s
 
   nginx:
     image: nginx:1.24.0
