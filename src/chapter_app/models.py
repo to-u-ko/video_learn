@@ -52,6 +52,7 @@ class Chapters(models.Model):
     chapter_text = models.TextField(default='チャプター生成中')
     updated_at = models.DateTimeField(auto_now=True)
 
+
 # 要約テーブル
 class Summarys(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE)

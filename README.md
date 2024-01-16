@@ -165,50 +165,41 @@ video-learn
 
 ### コンテナの作成と起動
 
-1. chapter/openai_api.env ファイルに以下の例のようにopenAIのAPIキーを記載
+1. 以下の環境変数一覧をもとにchapter/openai_api.envファイルを作成
 
-OPENAI_API_KEY = "sk-v9XXXXXXXXXXXXXXXXXXXXXXXXXXX"
+OPENAI_API_KEY = "XXX"
 
-2. chapter/src/project/settings_local.py ファイルに以下の例のようにDjangoのシークレットキー、S3へのアクセスキー・バケット名、メール通知用のアプリパスワード等を記載（S3バケットのポリシー設定を忘れずに）
+2. 以下の環境変数一覧をもとにchapter/src/project/settings_local.pyファイルを作成
 
-> SECRET_KEY = 'django-insecure-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+# Django SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'XXX'
 
->AWS_ACCESS_KEY_ID = 'AKIAXXXXXXXXXXXXXX'
->AWS_SECRET_ACCESS_KEY = 'ECXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
->AWS_STORAGE_BUCKET_NAME = 'XXXXXXXXXXXXXXXX'
+# AWSのS3バケット名と、アクセスキーを設定必要
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = 'XXX'
+AWS_SECRET_ACCESS_KEY = 'XXX'
+AWS_STORAGE_BUCKET_NAME = 'XXX'
+IMAGE_URI = 'XXX'
+ROLE = 'XXX'
+AWS_S3_REGION_NAME = 'ap-northeast-1'
 
->EMAIL_HOST = 'smtp.gmail.com'
->EMAIL_PORT = 587
->EMAIL_HOST_USER = 'XXXXXXXXXX@gmail.com'
->EMAIL_HOST_PASSWORD = 'XXXXXXXXXXXXXXXX'
->EMAIL_USE_TLS = True
->EMAIL_USE_SSL = False
->DEFAULT_FROM_EMAIL = 'XXXXXXXXXX@gmail.com'
+# メール通知設定
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'XXX'
+EMAIL_HOST_PASSWORD = 'XXX'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+DEFAULT_FROM_EMAIL = 'XXX'
 
-3. GPUを使用するのであれば、docker-compose.ymlファイルのdjangoコンテナと以下のコメントアウトを外す(cpuを使用するのであればそのまま)
-
-services:  
-  django:
-
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - capabilities: [gpu]
-
-services:  
-  celery:
-
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - capabilities: [gpu]
-
-
-4. 以上を修正後、以下のコマンドで環境を構築
-
+3. 以下のコマンドを実行
+```
 docker compose up
+docker compose exec django python manage.py makemigrations	
+docker compose exec django python manage.py migrate
+docker compose exec django python3 manage.py createsuperuser
+```
 
 <br><br>
 
@@ -228,9 +219,6 @@ docker compose stop
 | 変数名                 | 役割                                      |
 | ---------------------- | ----------------------------------------- |
 | SECRET_KEY    | Djangoのシークレットキー（Djangoのproject新規作成時にsettings.pyに記載される。） |
-| ALLOWED_HOSTS          | Djangoにリクエストを許可するホスト名              | 
-| DEBUG                  | デバッグモードの切り替え                  |
-| TRUSTED_ORIGINS        | CORS で許可するオリジン                   |
 | MYSQL_PASSWORD         | MySQL のパスワード（Docker で使用）       | 
 | MYSQL_HOST             | MySQL のホスト名（Docker で使用）         | 
 | MYSQL_PORT             | MySQL のポート番号（Docker で使用）       |
