@@ -220,7 +220,7 @@ def celery_process(user_id, video_id):
         print(transcription_text)
 
         # openAIでチャプター生成
-        chatgpt_response = gpt4_create_chapter_summary(transcription_text)
+        chatgpt_response = gpt4turbo_create_chapter_summary(transcription_text)
         print('chatGPT処理完了')
         chapter_text = get_chapter(chatgpt_response)
         chapter.chapter_text = chapter_text
