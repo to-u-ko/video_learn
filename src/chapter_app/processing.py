@@ -149,7 +149,6 @@ def gpt4turbo_create_chapter_summary(transcription_text):
     )
 
     texts = text_splitter.create_documents([transcription_text])
-    print(texts)
 
     # 言語モデルとしてOpenAIのモデルを指定
     llm = ChatOpenAI(model_name="gpt-4-1106-preview")
@@ -217,7 +216,6 @@ def celery_process(user_id, video_id):
         
         # S3に保存された文字起こしファイルから中身のテキストを取得
         transcription_text = get_transcription(transcriptin_path)
-        print(transcription_text)
 
         # openAIでチャプター生成
         chatgpt_response = gpt4turbo_create_chapter_summary(transcription_text)

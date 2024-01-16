@@ -8,7 +8,7 @@ langchain==0.1.0
 openai==1.7.1
 langchain_openai==0.0.2
 
-# celery関係e
+# celery関係
 celery==5.3.6
 django-celery-results==2.5.1
 django-redis==5.4.0
