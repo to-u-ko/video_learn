@@ -1,5 +1,6 @@
-# chapter
-チャプター作成アプリ
+
+# video-learn
+動画チャプター&要約自動生成アプリ
 
 
 
@@ -15,6 +16,8 @@
   <!-- ミドルウェア一覧 -->
   <img src="https://img.shields.io/badge/-Nginx-269539.svg?logo=nginx&style=for-the-badge">
   <img src="https://img.shields.io/badge/-MySQL-4479A1.svg?logo=mysql&style=for-the-badge&logoColor=white">
+  <img src="https://img.shields.io/badge/-Redis-">
+
   <!-- インフラ一覧 -->
   <img src="https://img.shields.io/badge/-Docker-1488C6.svg?logo=docker&style=for-the-badge">
   <img src="https://img.shields.io/badge/-Amazon%20aws-232F3E.svg?logo=amazon-aws&style=for-the-badge">
@@ -31,8 +34,7 @@
 
 <!-- プロジェクト名を記載 -->
 ## プロジェクト名
-
-チャプたん
+video-learn
 <br><br>
 
 
@@ -40,15 +42,16 @@
 
 ## プロジェクトについて
 
-チャプター作成アプリ
-
-（このアプリはCPUでも動作しますが、動画の文字起こしfaster-whisperの処理に時間を要するため、GPUでの動作を推奨します。）
+チャプター&要約自動生成の動画共有サイト
 
 <!-- プロジェクトの概要を記載 -->
 
-  - Djangoのデフォルト管理サイトでユーザー管理。
-  - 動画ファイル（.mp4）をアップロードすると、文字起こされ、文字起こしテキストをもとにchatGPTでチャプターを生成。
-  - 動画、文字起こしテキストはAWSのS3に保存。
+  - 講義動画の共有サイト
+  - スクールでの利用を想定。講師が講義動画をアップロードし、生徒が視聴する。
+  - 動画による学習を補助する機能として、動画のチャプターと要約の自動生成を提供
+  - 生徒は動画の視聴(チャプタージャンプ可能)、文字起こしテキストのダウンロード、要約の確認が可能
+  - 講師は動画のアップロード、文字起こしテキストのダウンロード、チャプターの編集、要約の編集が可能
+  - 内部の仕組みとしては、faster-whisperで動画の文字起こしを実行、文字起こしテキストをもとにchatGPTでチャプターと要約を生成。
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
 
@@ -59,14 +62,26 @@
 | 言語・フレームワークなど  | バージョン |
 | --------------------- | ---------- |
 | Python                | 3.9        |
-| Django                | <4         |
-| uwsgi                 |            |
-| MySQL                 | 8.0        |
+| Django                | 3.2.23     |
+| uWSGI                 | 2.0.23     |
 | mysqlclient           | 2.1.0      |
 | docker compose        | 3.9        |
 | openai                | 0.28.1     |
-| nginx 1.24.0          | 1.24.0     |
-| redis                 | latest     |
+| Django　              | 3.2.23     | 
+| uWSGI　               | 2.0.23     | 
+| mysqlclient　         | 2.1.0      | 
+| typing-extensions　   | 4.9.0      | 
+| langchain　           | 0.0.352    | 
+| openai　              | 0.28.1     | 
+| celery　              | 5.3.6      | 
+| django-celery-results | 2.5.1      | 
+| django-redis　        | 5.4.0      | 
+| boto3　               | 1.34.10    | 
+| django-storages　     | 1.14.2     | 
+| sagemaker　           | 2.203.0    | 
+| django-mdeditor　     | 0.1.20     | 
+| Markdown　            | 3.5.1      | 
+| opencv-python　       | 4.8.1.78   | 
 
 | Dockerimageとして使用  | バージョン |
 | --------------------- | ---------- |
@@ -74,33 +89,6 @@
 | nginx 1.24.0          | 1.24.0     |
 | redis                 | latest     |
 
-| GPU Dockerimage  | バージョン |
-| --------------------- | ---------- |
-| nvidia/cuda           | 11.7.1-cudnn8-runtime-ubuntu20.04     |
-
-その他、requirements.txtの内容
-> Django<4  
-> uwsgi  
-> mysqlclient == 2.1.0
->
-> faster-whisper
-> 
-> ffmpeg関係は動画圧縮しなければ不要  
-> ffmpeg-python  
-> future  
-> pydub  
-> pyee  
-> typing_extensions
-> 
-> langchain  
-> openai == 0.28.1
->
-> celery  
-> django-celery-results  
-> django-redis
->
-> boto3  
-> django-storages
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
 
@@ -110,72 +98,63 @@
 <!-- Treeコマンドを使ってディレクトリ構成を記載 -->
 <pre>
 .
-`-- chapter
+`-- video-learn
     |-- Docker
     |   |-- Django
     |   |   |-- Dockerfile
     |   |   `-- requirements.txt
     |   |-- MySQL
     |   |   `-- Dockerfile
-    |   `-- Nginx
-    |       |-- conf
-    |       |   `-- app_nginx.conf
-    |       `-- uwsgi_params
-    |-- README.md
-    |-- docker-compose.yml
-    |-- openai_api.env
+    |   |-- Nginx
+    |   |    |-- conf
+    |   |    |   `-- app_nginx.conf
+    |   |    `-- uwsgi_params
+    |   `-- Sage_Docker
+    |       `-- Dockerfile
     |-- sql
     |   `-- init.sql
-    `-- src
-        |-- chapter_app
-        |   |-- __init__.py
-        |   |-- admin.py
-        |   |-- apps.py
-        |   |-- create_chapter.py
-        |   |-- forms.py
-        |   |-- migrations
-        |   |   |-- 0001_initial.py
-        |   |   |-- 0002_auto_20231109_1904.py
-        |   |   |-- 0003_chapter_video_path.py
-        |   |   |-- 0004_rename_video_path_chapter_video_file_path.py
-        |   |   |-- 0005_alter_chapter_status.py
-        |   |   |-- 0006_alter_chapter_status.py
-        |   |   |-- 0007_alter_chapter_status.py
-        |   |   |-- 0008_alter_chapter_video_title.py
-        |   |   `-- __init__.py
-        |   |-- models.py
-        |   |-- tests.py
-        |   |-- urls.py
-        |   `-- views.py
-        |-- manage.py
-        |-- project
-        |   |-- __init__.py
-        |   |-- asgi.py
-        |   |-- celery.py
-        |   |-- settings.py
-        |   |-- settings_local.py
-        |   |-- urls.py
-        |   `-- wsgi.py
-        |-- static
-        |   |-- chara_icon.png
-        |   `-- style.css
-        |-- storage
-        |   |-- comp_videos
-        |   |   `-- init.txt
-        |   |-- transcriptions
-        |   |   `-- init.text
-        |   `-- videos
-        |       `-- init.txt
-        `-- templates
-            |-- base-top.html
-            |-- base.html
-            |-- edit.html
-            |-- login.html
-            |-- logout.html
-            |-- main.html
-            |-- signup.html
-            |-- upload.html
-            `-- user.html
+    |-- src
+    |   |-- chapter_app
+    |   |   |-- migrations
+    |   |   |-- templatetags
+    |   |   |-- __init__.py
+    |   |   |-- admin.py
+    |   |   |-- apps.py
+    |   |   |-- forms.py
+    |   |   |-- models.py
+    |   |   |-- processing.py
+    |   |   |-- sage_whisper.py
+    |   |   |-- tests.py
+    |   |   |-- urls.py
+    |   |   `-- views.py
+    |   |-- media    
+    |   |-- project
+    |   |   |-- __init__.py
+    |   |   |-- asgi.py
+    |   |   |-- celery.py
+    |   |   |-- settings.py
+    |   |   |-- settings_local.py
+    |   |-- urls.py
+    |   |   `-- wsgi.py
+    |   |-- static
+    |   |   `-- style.css
+    |   |-- templates
+    |   |   |-- base-top.html
+    |   |   |-- base.html
+    |   |   |-- chapter_edit.html
+    |   |   |-- login.html
+    |   |   |-- logout.html
+    |   |   |-- main.html
+    |   |   |-- summary_edit.html
+    |   |   |-- summary.html
+    |   |   |-- upload.html
+    |   |   |-- user.html
+    |   |   `-- video.html
+    |   `-- manage.py
+    |-- static
+    |-- docker-compose.yml
+    |-- openai_api.env
+    `-- README.md
 </pre>
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
@@ -186,50 +165,41 @@
 
 ### コンテナの作成と起動
 
-1. chapter/openai_api.env ファイルに以下の例のようにopenAIのAPIキーを記載
+1. 以下の環境変数一覧をもとにchapter/openai_api.envファイルを作成
 
-OPENAI_API_KEY = "sk-v9XXXXXXXXXXXXXXXXXXXXXXXXXXX"
+OPENAI_API_KEY = "XXX"
 
-2. chapter/src/project/settings_local.py ファイルに以下の例のようにDjangoのシークレットキー、S3へのアクセスキー・バケット名、メール通知用のアプリパスワード等を記載（S3バケットのポリシー設定を忘れずに）
+2. 以下の環境変数一覧をもとにchapter/src/project/settings_local.pyファイルを作成
 
-> SECRET_KEY = 'django-insecure-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+# Django SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'XXX'
 
->AWS_ACCESS_KEY_ID = 'AKIAXXXXXXXXXXXXXX'
->AWS_SECRET_ACCESS_KEY = 'ECXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
->AWS_STORAGE_BUCKET_NAME = 'XXXXXXXXXXXXXXXX'
+# AWSのS3バケット名と、アクセスキーを設定必要
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = 'XXX'
+AWS_SECRET_ACCESS_KEY = 'XXX'
+AWS_STORAGE_BUCKET_NAME = 'XXX'
+IMAGE_URI = 'XXX'
+ROLE = 'XXX'
+AWS_S3_REGION_NAME = 'ap-northeast-1'
 
->EMAIL_HOST = 'smtp.gmail.com'
->EMAIL_PORT = 587
->EMAIL_HOST_USER = 'XXXXXXXXXX@gmail.com'
->EMAIL_HOST_PASSWORD = 'XXXXXXXXXXXXXXXX'
->EMAIL_USE_TLS = True
->EMAIL_USE_SSL = False
->DEFAULT_FROM_EMAIL = 'XXXXXXXXXX@gmail.com'
+# メール通知設定
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'XXX'
+EMAIL_HOST_PASSWORD = 'XXX'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+DEFAULT_FROM_EMAIL = 'XXX'
 
-3. GPUを使用するのであれば、docker-compose.ymlファイルのdjangoコンテナと以下のコメントアウトを外す(cpuを使用するのであればそのまま)
-
-services:  
-  django:
-
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - capabilities: [gpu]
-
-services:  
-  celery:
-
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - capabilities: [gpu]
-
-
-4. 以上を修正後、以下のコマンドで環境を構築
-
+3. 以下のコマンドを実行
+```
 docker compose up
+docker compose exec django python manage.py makemigrations	
+docker compose exec django python manage.py migrate
+docker compose exec django python3 manage.py createsuperuser
+```
 
 <br><br>
 
@@ -249,9 +219,6 @@ docker compose stop
 | 変数名                 | 役割                                      |
 | ---------------------- | ----------------------------------------- |
 | SECRET_KEY    | Djangoのシークレットキー（Djangoのproject新規作成時にsettings.pyに記載される。） |
-| ALLOWED_HOSTS          | Djangoにリクエストを許可するホスト名              | 
-| DEBUG                  | デバッグモードの切り替え                  |
-| TRUSTED_ORIGINS        | CORS で許可するオリジン                   |
 | MYSQL_PASSWORD         | MySQL のパスワード（Docker で使用）       | 
 | MYSQL_HOST             | MySQL のホスト名（Docker で使用）         | 
 | MYSQL_PORT             | MySQL のポート番号（Docker で使用）       |
@@ -312,3 +279,4 @@ docker compose stop
 
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
+

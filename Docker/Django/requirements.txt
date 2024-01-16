@@ -4,8 +4,9 @@ mysqlclient == 2.1.0
 
 # chatGPT関係
 typing-extensions==4.9.0
-langchain==0.0.352
-openai == 0.28.1
+langchain==0.1.0
+openai==1.7.1
+langchain_openai==0.0.2
 
 # celery関係
 celery==5.3.6

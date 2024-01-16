@@ -4,7 +4,7 @@ from celery import shared_task
 # chatGPTAPI用
 import os
 from langchain.prompts import PromptTemplate
-from langchain.llms import OpenAI
+from langchain_openai import ChatOpenAI
 from langchain import LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import re
@@ -109,7 +109,7 @@ def gpt4_create_chapter_summary(transcription_text):
     texts = text_splitter.create_documents([transcription_text])
 
     # 言語モデルとしてOpenAIのモデルを指定
-    llm = OpenAI(model_name="gpt-4")
+    llm = ChatOpenAI(model_name="gpt-4")
 
     # プロンプト文
     template = """
@@ -151,7 +151,7 @@ def gpt4turbo_create_chapter_summary(transcription_text):
     texts = text_splitter.create_documents([transcription_text])
 
     # 言語モデルとしてOpenAIのモデルを指定
-    llm = OpenAI(model_name="gpt-4-1106-preview")
+    llm = ChatOpenAI(model_name="gpt-4-1106-preview")
 
     # プロンプト文
     template = """
@@ -242,6 +242,7 @@ def celery_process(user_id, video_id):
         user_email = user.email
         video = Video.objects.get(pk=video_id)
         video.status = "処理エラー"
+        video.save()
 
         subject = 'チャプたん通知（エラー）'
         message = f'チャプたんで動画「{video.video_title}」の処理中にエラーが発生しました。'
