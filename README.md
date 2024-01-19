@@ -1,6 +1,6 @@
 
 # video-learn
-動画チャプター&要約自動生成アプリ
+チャプター&要約を自動生成してくれる動画共有アプリ
 
 
 
@@ -32,17 +32,12 @@
 5. [トラブルシューティング](#トラブルシューティング)
 <br />
 
-<!-- プロジェクト名を記載 -->
-## プロジェクト名
-video-learn
-<br><br>
-
 
 <!-- プロジェクトについて -->
 
 ## プロジェクトについて
 
-チャプター&要約自動生成の動画共有サイト
+チャプター&要約を自動生成してくれる動画共有アプリ
 
 <!-- プロジェクトの概要を記載 -->
 
@@ -157,36 +152,43 @@ video-learn
 
 ## 開発環境構築
 
+developブランチ：ローカル用
+mainブランチ：AWSへのデプロイ用
+
 <!-- コンテナの作成方法、パッケージのインストール方法など、開発環境構築に必要な情報を記載 -->
 
 ### コンテナの作成と起動
 
-1. 以下の環境変数一覧をもとにchapter/openai_api.envファイルを作成
+　1. video_learn/openai_api.envファイルを作成し以下を記載
+```
+OPENAI_API_KEY = "OpenAIサイトで取得したAPIキー"
+AWS_DEFAULT_REGION = "AWSのリージョン"
+AWS_ACCESS_KEY_ID = "AWSアクセスキー"
+AWS_SECRET_ACCESS_KEY = "AWSシークレットアクセスキー"
+```
+　2. video_learn/src/project/settings_local.pyファイルを作成し以下を記載
 
-OPENAI_API_KEY = "XXX"
-
-2. 以下の環境変数一覧をもとにchapter/src/project/settings_local.pyファイルを作成
-
-SECRET_KEY = 'XXX'
+```
+SECRET_KEY = 'XXXDjangoのシークレットキー（Djangoのproject新規作成時にsettings.pyに記載される。）'
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_ACCESS_KEY_ID = 'XXX'
-AWS_SECRET_ACCESS_KEY = 'XXX'
-AWS_STORAGE_BUCKET_NAME = 'XXX'
-IMAGE_URI = 'XXX'
-ROLE = 'XXX'
-AWS_S3_REGION_NAME = 'ap-northeast-1'
+AWS_ACCESS_KEY_ID = 'IAMユーザーのアクセスキー'
+AWS_SECRET_ACCESS_KEY = 'IAMユーザーのシークレットアクセスキー'
+AWS_STORAGE_BUCKET_NAME = 'AWSのS3のバケット名'
+IMAGE_URI = 'Sagemaker Processingで使うfaster-whisper用のコンテナイメージのURI'
+ROLE = 'Sagemaker Processing用のIAMロールのARN'
+AWS_S3_REGION_NAME = 'AWSのリージョン'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'XXX'
-EMAIL_HOST_PASSWORD = 'XXX'
+EMAIL_HOST = 'メールサーバーを指定'
+EMAIL_PORT = 'TLSを使うなら587、SSLを使うなら465'
+EMAIL_HOST_USER = 'メールサーバーのメールアカウント'
+EMAIL_HOST_PASSWORD = 'メールサーバーで取得したアプリパスワード（gmailの場合、ログインパスワードとは別に作成必要）'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-DEFAULT_FROM_EMAIL = 'XXX'
-
-1. 以下のコマンドを実行
+DEFAULT_FROM_EMAIL = '送信者のメールアドレス'
+```
+　3. 以下のコマンドを実行
 ```
 docker compose up
 docker compose exec django python manage.py makemigrations	
@@ -205,35 +207,19 @@ http://127.0.0.1 か、http://localhost にアクセスできるか確認
 
 以下のコマンドでコンテナを停止することができます
 
+```
 docker compose stop
-
-### 環境変数の一覧
-
-| 変数名                 | 役割                                      |
-| ---------------------- | ----------------------------------------- |
-| SECRET_KEY    | Djangoのシークレットキー（Djangoのproject新規作成時にsettings.pyに記載される。） |
-| MYSQL_PASSWORD         | MySQL のパスワード（Docker で使用）       | 
-| MYSQL_HOST             | MySQL のホスト名（Docker で使用）         | 
-| MYSQL_PORT             | MySQL のポート番号（Docker で使用）       |
-| AWS_ACCESS_KEY_ID         | AWSにS3バケットを作成し、IAMからアクセスキーを取得しておく   |
-| AWS_SECRET_ACCESS_KEY             | AWS_ACCESS_KEY_IDと同時に作成される         |
-| AWS_STORAGE_BUCKET_NAME             | AWSのS3のバケット名                 |
-| EMAIL_HOST | メールサーバーを指定   |
-| EMAIL_PORT          | TLSを使うなら587、SSLを使うなら465              | 
-| EMAIL_HOST_USER                  | メールサーバーのメールアカウント                  |
-| EMAIL_HOST_PASSWORD        | メールサーバーで取得したアプリパスワード（gmailの場合、ログインパスワードとは別に作成必要）                   |
-| DEFAULT_FROM_EMAIL | 送信者のメールアドレス   |
-
+```
 
 ### コマンド一覧
 
 | コマンド                | 実行する処理                                                            |
 | ------------------- | ----------------------------------------------------------------------- |
-| docker compose up        | ymlファイルのとおりコンテナ起動（Windowsはdocker「-」compose） |
+| docker compose up        | ymlファイルのとおりコンテナ起動 |
 | docker compose stop        | コンテナ停止 |
 | docker compose down        | コンテナ停止・削除 |
 | sh .docker_clear.sh        | コンテナ停止・削除、imageも全削除 |
-| docker compose exec django python3 manage.py makemigrations        | Djangoのmodel.pyを変更したら、migrationファイルを作成 |
+| docker compose exec django python3 manage.py makemigrations        | Djangoのmodels.pyを変更したら、migrationファイルを作成 |
 | docker compose exec django python3 manage.py migrate        | Djangoのmigrationファイルをデータベースに反映（注意！：既にデータが何かMySQLに入っていると、反映できずにエラーします。） |
 | docker compose exec django python3 manage.py collectstatic        | Djangoのcssファイルを適用（本番環境ではこれを実行しないとdjangoコンテナの作成でエラーします。） |
 | docker compose exec django python3 manage.py createsuperuser        | Django管理者用アカウントを作成 |
@@ -253,22 +239,18 @@ docker compose stop
   
 
 ### 「celeryエラー」する原因
-基本的には、エラーコードをググってください。
 以下は実際にあったエラーの原因です。
 - ログインユーザーのメールアドレスが空白又は使えないアドレスを設定した。
 - chatGPTのAPI利用上限に達した。
-- chatGPTの3.5-turboのAPIで、gpt4を使おうとした。（chapter_app/create_chapter.py修正ミス）
-- CPUしか使えないのに、GPU処理を使うよう設定した。（yml修正ミス）
-- CPUしか使えない環境で文字起こしをすると、PCスペック不足・dockerのリソース不足（主にメモリ不足）の場合、文字起こしのfaster-whisperが落ちます。（メモリ16GB以上を推奨）
-
+- chatGPTのモデル違い
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
 
 <br>
 
 ## その他
-※コードのcomp は、ffmpegで動画圧縮をしようとした跡です。  
-　不要なコードがいくつか含まれているため、今後の整理が必要です。
+　レスポンシブ未対応です
+
 
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
