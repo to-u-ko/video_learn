@@ -47,10 +47,10 @@ video-learn
 <!-- プロジェクトの概要を記載 -->
 
   - 講義動画の共有サイト
-  - スクールでの利用を想定。講師が講義動画をアップロードし、生徒が視聴する。
-  - 動画による学習を補助する機能として、動画のチャプターと要約の自動生成を提供
-  - 生徒は動画の視聴(チャプタージャンプ可能)、文字起こしテキストのダウンロード、要約の確認が可能
-  - 講師は動画のアップロード、文字起こしテキストのダウンロード、チャプターの編集、要約の編集が可能
+  - スクールなどの学習環境での利用を想定。講師が講義動画をアップロードし生徒が視聴するイメージ
+  - 動画をアップロードするとチャプターと要約を自動生成
+  - 生徒は動画の視聴、文字起こしテキストのダウンロード、要約の閲覧が可能
+  - 講師は動画のアップロード、視聴、文字起こしテキストのダウンロード、チャプターの編集、要約の編集が可能(編集は自分のアップロードした動画のみ)
   - 内部の仕組みとしては、faster-whisperで動画の文字起こしを実行、文字起こしテキストをもとにchatGPTでチャプターと要約を生成。
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
@@ -65,14 +65,10 @@ video-learn
 | Django                | 3.2.23     |
 | uWSGI                 | 2.0.23     |
 | mysqlclient           | 2.1.0      |
-| docker compose        | 3.9        |
-| openai                | 0.28.1     |
-| Django　              | 3.2.23     | 
-| uWSGI　               | 2.0.23     | 
-| mysqlclient　         | 2.1.0      | 
 | typing-extensions　   | 4.9.0      | 
-| langchain　           | 0.0.352    | 
-| openai　              | 0.28.1     | 
+| langchain　           | 0.1.0      | 
+| openai　              | 1.7.1      | 
+| langchain_openai      | 0.0.2      |
 | celery　              | 5.3.6      | 
 | django-celery-results | 2.5.1      | 
 | django-redis　        | 5.4.0      | 
@@ -171,10 +167,8 @@ OPENAI_API_KEY = "XXX"
 
 2. 以下の環境変数一覧をもとにchapter/src/project/settings_local.pyファイルを作成
 
-# Django SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'XXX'
 
-# AWSのS3バケット名と、アクセスキーを設定必要
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = 'XXX'
 AWS_SECRET_ACCESS_KEY = 'XXX'
@@ -183,7 +177,6 @@ IMAGE_URI = 'XXX'
 ROLE = 'XXX'
 AWS_S3_REGION_NAME = 'ap-northeast-1'
 
-# メール通知設定
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -193,7 +186,7 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 DEFAULT_FROM_EMAIL = 'XXX'
 
-3. 以下のコマンドを実行
+1. 以下のコマンドを実行
 ```
 docker compose up
 docker compose exec django python manage.py makemigrations	

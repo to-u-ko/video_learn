@@ -4,14 +4,14 @@ from mdeditor.fields import MDTextField
 
 
 #ユーザーテーブルを定義
-class Users(AbstractUser):
+class User(AbstractUser):
     email = models.EmailField(max_length=100, unique=True)
     
     def __str__(self):
         return self.username
 
 # 動画テーブル
-class Videos(models.Model):   
+class Video(models.Model):   
     def video_upload_path(instance, filename):
         ext = filename.split('.')[-1]
         return f"storage/videos/video_{instance.id}.{ext}"
@@ -47,14 +47,14 @@ class Videos(models.Model):
 
 
 # チャプターテーブル
-class Chapters(models.Model):
+class Chapter(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
     chapter_text = models.TextField(default='チャプター生成中')
     updated_at = models.DateTimeField(auto_now=True)
 
 
 # 要約テーブル
-class Summarys(models.Model):
+class Summary(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
     summary_text = MDTextField(default='## 要約生成中')
     updated_at = models.DateTimeField(auto_now=True)

@@ -14,7 +14,7 @@ def seconds_to_hms(seconds):
 def faster_whisper(video_id):
     video_id = str(video_id)
     video_path = f'/opt/ml/processing/input/video_{video_id}.mp4'
-    model_size = "medium"
+    model_size = "large"
     model = WhisperModel(model_size, device="cuda", compute_type="float32")
 
     ####タイムスタンプ付き、テキストのみ書き出し####
