@@ -1,8 +1,8 @@
 
 # video-learn
 チャプター&要約を自動生成してくれる動画共有アプリ
-
-
+<br/>
+<br/>
 
 ## 使用技術一覧
 
@@ -22,6 +22,7 @@
   <img src="https://img.shields.io/badge/-Docker-1488C6.svg?logo=docker&style=for-the-badge">
   <img src="https://img.shields.io/badge/-Amazon%20aws-232F3E.svg?logo=amazon-aws&style=for-the-badge">
 </p>
+<br/>
 
 ## 目次
 
@@ -30,8 +31,7 @@
 3. [ディレクトリ構成](#ディレクトリ構成)
 4. [開発環境構築](#開発環境構築)
 5. [トラブルシューティング](#トラブルシューティング)
-<br />
-
+<br/>
 
 <!-- プロジェクトについて -->
 
@@ -49,6 +49,8 @@
   - 内部の仕組みとしては、faster-whisperで動画の文字起こしを実行、文字起こしテキストをもとにchatGPTでチャプターと要約を生成。
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
+
+<br/>
 
 ## 環境
 
@@ -82,7 +84,7 @@
 
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
-
+<br/>
 
 ## ディレクトリ構成
 
@@ -149,15 +151,16 @@
 </pre>
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
+<br/>
 
 ## 開発環境構築
 
-developブランチ：ローカル用
+developブランチ：ローカル用<br>
 mainブランチ：AWSへのデプロイ用
 
 <!-- コンテナの作成方法、パッケージのインストール方法など、開発環境構築に必要な情報を記載 -->
 
-### コンテナの作成と起動
+### 1.コンテナの作成と起動
 
 　1. video_learn/openai_api.envファイルを作成し以下を記載
 ```
@@ -196,14 +199,12 @@ docker compose exec django python manage.py migrate
 docker compose exec django python3 manage.py createsuperuser
 ```
 
-<br><br>
-
-### 動作確認
+### 2.動作確認
 
 http://127.0.0.1 か、http://localhost にアクセスできるか確認
 アクセスできたら成功
 
-### コンテナの停止
+### 3.コンテナの停止
 
 以下のコマンドでコンテナを停止することができます
 
@@ -227,18 +228,14 @@ docker compose stop
 
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
-
+<br/>
 
 ## トラブルシューティング
 
 ### djangoコンテナ又はceleryコンテナが立ちあがらない原因
 - settings_local.pyの環境設定が不十分
 - S3バケットのポリシー設定が不十分
-<br>
-
-  
-
-### 「celeryエラー」する原因
+### ステータスが「処理エラー」になる原因
 以下は実際にあったエラーの原因です。
 - ログインユーザーのメールアドレスが空白又は使えないアドレスを設定した。
 - chatGPTのAPI利用上限に達した。
