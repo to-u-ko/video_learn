@@ -46,6 +46,16 @@
     top: 5px;
   }
 
+  .login-info {
+    grid-row: 1 / 3;
+    grid-column: 3 / 4;
+    height: auto;
+    line-height: 2em;
+    background-color: yellow;
+    border: 2px solid yellow;
+    margin-left: 50px;
+  }
+
 </style>
   <div class="login-wrapper">
     <h1>Video-Learn</h1>
@@ -59,5 +69,25 @@
       </div>
     </form>
     <h3><a href="/admin/" class="admin">管理者用ページ</a></h3>
+  </div>
+  <div class="login-info">
+    <h2>アクセス頂いた方へ</h2>
+    <br>
+    <h3>★講師アカウント</h3>
+    <h4>　ユーザー名：teacher</h4>
+    <h4>　パスワード：tea_pass</h4> 
+    <p>　・動画のアップロードと視聴が可</b>能</p> 
+    <p>　・チャプター、要約の編集が可能（※自分のアップロードした動画のみ。他のユーザーの上げた動画の編集はできません。）</p> 
+    <h3>★生徒アカウント</h3>
+    <h4>　ユーザー名：student</h4>
+    <h4>　パスワード：stu_pass</h4>
+    <p>　・動画の視聴、チャプター・要約の閲覧のみ可能</p>
+    <br>
+    <h3>※注意事項</h3>
+    <p>　・動画アップロード後、チャプターと要約が生成されるまで数分〜数十分かかります。</p>
+    <p>　　目安）30分動画で7~8分、2時間動画で30~40分ほど</p>
+    <p>　・サンプルであがっている2本の動画はデジタル庁のYoutubeの動画です</p>
+    <p><a href="https://youtu.be/mkyBxjGb2RQ">デジタル庁｜年次活動報告　2023年9月</a></p>
+    <p><a href="https://youtu.be/vx1QrryxT2k ">「モビリティ・ロードマップ」のありかたに関する研究会（第６回）</a></p>
   </div>
 {% endblock %}
