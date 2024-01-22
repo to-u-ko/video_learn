@@ -1,6 +1,9 @@
 
 # video-learn
 チャプター&要約を自動生成してくれる動画共有アプリ
+
+※このアプリは以下の自動チャプター生成アプリをもとに作成しています<br>
+https://github.com/hackathon-autumn-c/chaptan
 <br/>
 <br/>
 
