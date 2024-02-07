@@ -231,8 +231,8 @@ def celery_process(user_id, video_id):
         video.save()
         
         # 処理完了のメール送信
-        subject = 'チャプたん通知（完了）'
-        message = f'チャプたんで動画「{video.video_title}」のチャプターと要約の生成が完了しました。'
+        subject = 'Video-Learn通知（完了）'
+        message = f'Video-Learnで動画「{video.video_title}」のチャプターと要約の生成が完了しました。'
         send_email(subject, message, user_email)
         
 
@@ -244,6 +244,6 @@ def celery_process(user_id, video_id):
         video.status = "処理エラー"
         video.save()
 
-        subject = 'チャプたん通知（エラー）'
-        message = f'チャプたんで動画「{video.video_title}」の処理中にエラーが発生しました。'
+        subject = 'Video-Learn通知（エラー）'
+        message = f'Video-Learnで動画「{video.video_title}」の処理中にエラーが発生しました。'
         send_email(subject, message, user_email)
