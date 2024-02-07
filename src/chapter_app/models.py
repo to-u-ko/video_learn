@@ -24,10 +24,6 @@ class Video(models.Model):
     thumbnail_path = models.CharField(max_length=256, null=True)
     transcription_path = models.CharField(max_length=256, null=True)
 
-    def video_upload_path(instance, filename):
-        ext = filename.split('.')[-1]
-        return f"storage/videos/{instance.id}.{ext}"
-
     def save(self, *args, **kwargs):
         if self.id is None:
         # アップロードされたファイルを変数に代入しておく
