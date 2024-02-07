@@ -60,6 +60,9 @@
     {% if video.transcription_path %}
       <a href="{% url 'download_transcription' video.id %}" class="menu-button">文字起こしダウンロード</a>
     {% endif %}
+    {% if user == video.user %}
+      <a href="{% url 'video_delete' video.id %}" class="delete-menu-button" id="video-delete-button">動画削除</a>
+    {% endif %}
   </div>
 
   <div class="video-wrapper">
@@ -89,6 +92,7 @@
   </div>
 
     <script>
+    // 動画ジャンプ機能
       document.addEventListener("DOMContentLoaded", function () {
         // チャプターリンクにイベントリスナーを設定
         var chapterLinks = document.querySelectorAll(".chapter-link");
@@ -115,5 +119,14 @@
         video.currentTime = totalSeconds;
         video.play();
       }
+
+      // 動画削除の確認モーダル
+      document.getElementById('video-delete-button').addEventListener('click', function(event) {
+          event.preventDefault();
+          var result = confirm('動画をもとに生成された文字起こし、チャプター、要約も共に削除されます。本当に削除しますか？');
+          if (result) {
+            window.location.href = this.href;
+          }
+    });
     </script>
 {% endblock %}

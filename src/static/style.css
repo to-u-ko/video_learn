@@ -100,6 +100,26 @@ main {
   border: 2px solid rgb(255, 136, 0);
 }
 
+.delete-menu-button {
+  display: block;
+  width: auto;
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 0.7rem 2rem;
+  font-weight: bold;
+  border: 2px solid blue;
+  background: blue;
+  color: #fff;
+  border-radius: 10px;
+  transition: 0.5s;
+}
+
+.delete-menu-button:hover  {
+  color: blue;
+  background: #fff;
+  border: 2px solid blue;
+}
+
 .submit-button {
   display: block;
   float: right;

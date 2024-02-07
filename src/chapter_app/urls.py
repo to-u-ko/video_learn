@@ -12,4 +12,5 @@ urlpatterns = [
     path('download_transcription/<int:pk>', views.download_transcripion_view, name='download_transcription'),
     path('summary/<int:pk>', views.summary_view, name='summary'),
     path('summary_edit/<int:pk>', views.summary_edit_view, name='summary_edit'),
+    path('video_delete/<int:pk>', views.video_delete_view, name='video_delete'),
 ]

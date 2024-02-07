@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from .models import User, Video, Chapter, Summary
+import os
 
 import boto3
 from botocore.client import Config
@@ -211,3 +212,23 @@ def summary_edit_view(request, pk):
     else:
         messages.error(request, '自分でアップロードした動画のみ編集可能です')
         return redirect('summary', pk)
+
+
+def video_delete_view(request, pk):
+    video = get_object_or_404(Video, pk=pk)
+    if request.user == video.user:
+        # サムネイル画像の削除
+        thumbnail = '/code' + video.thumbnail_path
+        os.remove(thumbnail)
+        # S3の動画と文字起こしの削除
+        s3 = boto3.client('s3')
+        video_path = f'storage/videos/video_{video.id}.mp4'
+        s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=video_path)
+        if video.transcription_path:
+            s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=video.transcription_path)
+        video.delete()
+        return redirect('main')
+
+    else:
+        messages.error(request, '自分でアップロードした動画のみ削除可能です')
+        return redirect('video', pk)
