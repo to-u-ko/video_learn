@@ -1,6 +1,10 @@
 
 # video-learn
 チャプター&要約を自動生成してくれる動画共有アプリ
+
+※このアプリは以下の自動チャプター生成アプリをもとに作成しています
+https://github.com/hackathon-autumn-c/chaptan
+
 <br/>
 <br/>
 
@@ -16,7 +20,7 @@
   <!-- ミドルウェア一覧 -->
   <img src="https://img.shields.io/badge/-Nginx-269539.svg?logo=nginx&style=for-the-badge">
   <img src="https://img.shields.io/badge/-MySQL-4479A1.svg?logo=mysql&style=for-the-badge&logoColor=white">
-  <img src="https://img.shields.io/badge/-Redis-">
+  <img src="https://img.shields.io/badge/-Redis-FC687D.svg?logo=redis&style=for-the-badge&logoColor=white">
 
   <!-- インフラ一覧 -->
   <img src="https://img.shields.io/badge/-Docker-1488C6.svg?logo=docker&style=for-the-badge">
@@ -41,11 +45,11 @@
 
 <!-- プロジェクトの概要を記載 -->
 
-  - 講義動画の共有サイト
-  - スクールなどの学習環境での利用を想定。講師が講義動画をアップロードし生徒が視聴するイメージ
-  - 動画をアップロードするとチャプターと要約を自動生成
-  - 生徒は動画の視聴、文字起こしテキストのダウンロード、要約の閲覧が可能
-  - 講師は動画のアップロード、視聴、文字起こしテキストのダウンロード、チャプターの編集、要約の編集が可能(編集は自分のアップロードした動画のみ)
+  - 動画の共有サイト
+  - 動画をアップロードすると文字起こしを行い、それをもとにチャプターと要約を自動生成します
+  - スクールなどの学習環境での利用を想定。講師が講義動画をアップロードし生徒が視聴するイメージです
+  - 生徒は動画の視聴、、要約の閲覧、文字起こしのダウンロードが可能
+  - 講師は動画のアップロード、視聴、文字起こしのダウンロード、チャプターの編集、要約の編集、動画の削除が可能(編集は自分のアップロードした動画のみ)
   - 内部の仕組みとしては、faster-whisperで動画の文字起こしを実行、文字起こしテキストをもとにchatGPTでチャプターと要約を生成。
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
@@ -161,25 +165,31 @@ mainブランチ：AWSへのデプロイ用
 <!-- コンテナの作成方法、パッケージのインストール方法など、開発環境構築に必要な情報を記載 -->
 
 ### 1.コンテナの作成と起動
+  1. OpenAIのサイトでOPENAI_API_KEYを取得する。
+  2. AWSで下記を設定する
+   ・IAMユーザーのアクセスキーを取得する
+   ・S3でアプリ用のバケットを作成する
+   ・Docker/Sage_Docker/Dockerfileをもとにdockerイメージを作成し、ECRのプライベートリポジトリにプッシュする
+   ・Sagemaker用のIAMロールを作成し、Sagemaker、S3、ECRのFullAccess権限を与える
 
-　1. video_learn/openai_api.envファイルを作成し以下を記載
+　3. video_learn/openai_api.envファイルを作成し以下を記載
 ```
-OPENAI_API_KEY = "OpenAIサイトで取得したAPIキー"
-AWS_DEFAULT_REGION = "AWSのリージョン"
-AWS_ACCESS_KEY_ID = "AWSアクセスキー"
+OPENAI_API_KEY = 'OpenAIサイトで取得したAPIキー'
+AWS_DEFAULT_REGION = 'AWSのリージョン'
+AWS_ACCESS_KEY_ID = 'IAMユーザーのアクセスキー'
 AWS_SECRET_ACCESS_KEY = "AWSシークレットアクセスキー"
 ```
-　2. video_learn/src/project/settings_local.pyファイルを作成し以下を記載
+　4. video_learn/src/project/settings_local.pyファイルを作成し以下を記載
 
 ```
-SECRET_KEY = 'XXXDjangoのシークレットキー（Djangoのproject新規作成時にsettings.pyに記載される。）'
+SECRET_KEY = 'Djangoのシークレットキー（Djangoのproject新規作成時にsettings.pyに記載される。）'
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = 'IAMユーザーのアクセスキー'
 AWS_SECRET_ACCESS_KEY = 'IAMユーザーのシークレットアクセスキー'
 AWS_STORAGE_BUCKET_NAME = 'AWSのS3のバケット名'
-IMAGE_URI = 'Sagemaker Processingで使うfaster-whisper用のコンテナイメージのURI'
-ROLE = 'Sagemaker Processing用のIAMロールのARN'
+IMAGE_URI = '手順2でプッシュしたDockerイメージのURI'
+ROLE = '手順2で作成したSagemaker用のIAMロールのARN'
 AWS_S3_REGION_NAME = 'AWSのリージョン'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
