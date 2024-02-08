@@ -1,6 +1,7 @@
 
 # video-learn
 チャプター&要約を自動生成してくれる動画共有アプリ
+アプリの説明：https://qiita.com/to-u-ko/items/98ff4c30a2f5e8b42237
 
 ※このアプリは以下の自動チャプター生成アプリをもとに作成しています
 https://github.com/hackathon-autumn-c/chaptan
@@ -50,7 +51,7 @@ https://github.com/hackathon-autumn-c/chaptan
   - スクールなどの学習環境での利用を想定。講師が講義動画をアップロードし生徒が視聴するイメージです
   - 生徒は動画の視聴、、要約の閲覧、文字起こしのダウンロードが可能
   - 講師は動画のアップロード、視聴、文字起こしのダウンロード、チャプターの編集、要約の編集、動画の削除が可能(編集は自分のアップロードした動画のみ)
-  - 内部の仕組みとしては、faster-whisperで動画の文字起こしを実行、文字起こしテキストをもとにchatGPTでチャプターと要約を生成。
+  - 内部の仕組みとしては、faster-whisperで動画の文字起こしを実行、文字起こしをもとにchatGPTでチャプターと要約を生成しています。
 
 <p align="right">(<a href="#top">トップへ</a>)</p>
 
@@ -83,7 +84,7 @@ https://github.com/hackathon-autumn-c/chaptan
 | Dockerimageとして使用  | バージョン |
 | --------------------- | ---------- |
 | MySQL                 | 8.0        |
-| nginx 1.24.0          | 1.24.0     |
+| nginx                 | 1.24.0     |
 | redis                 | latest     |
 
 
@@ -159,27 +160,29 @@ https://github.com/hackathon-autumn-c/chaptan
 
 ## 開発環境構築
 
-developブランチ：ローカル用<br>
-mainブランチ：AWSへのデプロイ用
+**developブランチ：ローカル用**<br>
+**mainブランチ：AWSへのデプロイ用**
 
 <!-- コンテナの作成方法、パッケージのインストール方法など、開発環境構築に必要な情報を記載 -->
 
-### 1.コンテナの作成と起動
+### 1.事前準備
   1. OpenAIのサイトでOPENAI_API_KEYを取得する。
-  2. AWSで下記を設定する
+  2. chatGPTのモデルで「gpt-4-1106-preview」以外を使う場合は、src/chapter_app/processing.pyの154行目のモデルを書き換える。
+  3. AWSで下記を設定する
    ・IAMユーザーのアクセスキーを取得する
    ・S3でアプリ用のバケットを作成する
    ・Docker/Sage_Docker/Dockerfileをもとにdockerイメージを作成し、ECRのプライベートリポジトリにプッシュする
    ・Sagemaker用のIAMロールを作成し、Sagemaker、S3、ECRのFullAccess権限を与える
 
-　3. video_learn/openai_api.envファイルを作成し以下を記載
+### 2.コンテナの作成と起動
+　1. video_learn/openai_api.envファイルを作成し以下を記載
 ```
 OPENAI_API_KEY = 'OpenAIサイトで取得したAPIキー'
 AWS_DEFAULT_REGION = 'AWSのリージョン'
 AWS_ACCESS_KEY_ID = 'IAMユーザーのアクセスキー'
 AWS_SECRET_ACCESS_KEY = "AWSシークレットアクセスキー"
 ```
-　4. video_learn/src/project/settings_local.pyファイルを作成し以下を記載
+　2. video_learn/src/project/settings_local.pyファイルを作成し以下を記載
 
 ```
 SECRET_KEY = 'Djangoのシークレットキー（Djangoのproject新規作成時にsettings.pyに記載される。）'
@@ -188,8 +191,8 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = 'IAMユーザーのアクセスキー'
 AWS_SECRET_ACCESS_KEY = 'IAMユーザーのシークレットアクセスキー'
 AWS_STORAGE_BUCKET_NAME = 'AWSのS3のバケット名'
-IMAGE_URI = '手順2でプッシュしたDockerイメージのURI'
-ROLE = '手順2で作成したSagemaker用のIAMロールのARN'
+IMAGE_URI = '1-2でプッシュしたDockerイメージのURI'
+ROLE = '1-2で作成したSagemaker用のIAMロールのARN'
 AWS_S3_REGION_NAME = 'AWSのリージョン'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -209,12 +212,12 @@ docker compose exec django python manage.py migrate
 docker compose exec django python3 manage.py createsuperuser
 ```
 
-### 2.動作確認
+### 3.動作確認
 
 http://127.0.0.1 か、http://localhost にアクセスできるか確認
 アクセスできたら成功
 
-### 3.コンテナの停止
+### 4.コンテナの停止
 
 以下のコマンドでコンテナを停止することができます
 
