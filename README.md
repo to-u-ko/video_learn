@@ -1,9 +1,9 @@
 
 # video-learn
-チャプター&要約を自動生成してくれる動画共有アプリ
+チャプター&要約を自動生成してくれる動画共有アプリ<br/>
 アプリの説明：https://qiita.com/to-u-ko/items/98ff4c30a2f5e8b42237
 
-※このアプリは以下の自動チャプター生成アプリをもとに作成しています
+※このアプリは以下の自動チャプター生成アプリをもとに作成しています<br/>
 https://github.com/hackathon-autumn-c/chaptan
 
 <br/>
@@ -169,10 +169,10 @@ https://github.com/hackathon-autumn-c/chaptan
   1. OpenAIのサイトでOPENAI_API_KEYを取得する。
   2. chatGPTのモデルで「gpt-4-1106-preview」以外を使う場合は、src/chapter_app/processing.pyの154行目のモデルを書き換える。
   3. AWSで下記を設定する
-   ・IAMユーザーのアクセスキーを取得する
-   ・S3でアプリ用のバケットを作成する
-   ・Docker/Sage_Docker/Dockerfileをもとにdockerイメージを作成し、ECRのプライベートリポジトリにプッシュする
-   ・Sagemaker用のIAMロールを作成し、Sagemaker、S3、ECRのFullAccess権限を与える
+   - IAMユーザーのアクセスキーを取得する
+   - S3でアプリ用のバケットを作成する
+   - Docker/Sage_Docker/Dockerfileをもとにdockerイメージを作成し、ECRのプライベートリポジトリにプッシュする
+   - Sagemaker用のIAMロールを作成し、Sagemaker、S3、ECRのFullAccess権限を与える
 
 ### 2.コンテナの作成と起動
 　1. video_learn/openai_api.envファイルを作成し以下を記載
@@ -248,9 +248,8 @@ docker compose stop
 ### djangoコンテナ又はceleryコンテナが立ちあがらない原因
 - settings_local.pyの環境設定が不十分
 - S3バケットのポリシー設定が不十分
-### ステータスが「処理エラー」になる原因
-以下は実際にあったエラーの原因です。
-- ログインユーザーのメールアドレスが空白又は使えないアドレスを設定した。
+### チャプター・要約生成のステータスが「処理エラー」になる原因
+- ユーザーのメールアドレスが空白又は使えないアドレスを設定した。
 - chatGPTのAPI利用上限に達した。
 - chatGPTのモデル違い
 
